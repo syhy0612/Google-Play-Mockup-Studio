@@ -11,6 +11,8 @@ interface EditorPanelProps {
   strings: I18nStrings;
   isOpen: boolean;
   onClose: () => void;
+  galleryHeight: number;
+  setGalleryHeight: (h: number) => void;
 }
 
 // NOTE: Editor UI is STATIC CHINESE per v1.5 requirements.
@@ -20,7 +22,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   lang, 
   setLang,
   isOpen,
-  onClose
+  onClose,
+  galleryHeight,
+  setGalleryHeight
 }) => {
   
   const handleInputChange = (field: keyof AppConfig, value: string) => {
@@ -110,67 +114,33 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             </div>
                          </div>
                          <div className="mt-2 text-xs text-right text-gray-400">
-                             v1.6 (Deploy Ready)
+                             v1.8 (Integrated Menu)
                          </div>
                     </div>
 
-                    {/* Basic Info Section */}
+                    {/* v1.8: Height Debugger Updated Range */}
                     <section>
                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Edit3 className="w-4 h-4" /> 基本信息
+                            <Settings className="w-4 h-4" /> 布局调试
                         </h3>
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">应用名称</label>
-                                <input 
-                                    type="text" 
-                                    value={config.appName} 
-                                    onChange={(e) => handleInputChange('appName', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
+                            <div className="flex justify-between items-center">
+                                <label className="text-xs font-bold text-gray-700">截图区域高度</label>
+                                <span className="text-xs text-blue-600 font-mono">{galleryHeight}px</span>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">开发者名称</label>
-                                <input 
-                                    type="text" 
-                                    value={config.devName} 
-                                    onChange={(e) => handleInputChange('devName', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
+                            <input
+                                type="range"
+                                min="100"
+                                max="1000"
+                                step="10"
+                                value={galleryHeight}
+                                onChange={(e) => setGalleryHeight(Number(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                            />
+                            <div className="flex justify-between text-[10px] text-gray-400">
+                                <span>100px</span>
+                                <span>1000px</span>
                             </div>
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">应用描述</label>
-                                <textarea 
-                                    value={config.description}
-                                    onChange={(e) => handleInputChange('description', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Metrics Section */}
-                    <section>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Database className="w-4 h-4" /> 商店数据
-                        </h3>
-                        <div className="grid grid-cols-2 gap-3">
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-400">评分</label>
-                                <input type="text" value={config.rating} onChange={(e) => handleInputChange('rating', e.target.value)} placeholder="4.5" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                             </div>
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-400">下载量</label>
-                                <input type="text" value={config.downloads} onChange={(e) => handleInputChange('downloads', e.target.value)} placeholder="1B+" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                             </div>
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-400">应用大小</label>
-                                <input type="text" value={config.size} onChange={(e) => handleInputChange('size', e.target.value)} placeholder="45 MB" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                             </div>
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-400">分级</label>
-                                <input type="text" value={config.ratedFor} onChange={(e) => handleInputChange('ratedFor', e.target.value)} placeholder="3+" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                             </div>
                         </div>
                     </section>
 
@@ -244,6 +214,66 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                     </motion.div>
                                 ))}
                             </div>
+                        </div>
+                    </section>
+
+                    {/* Basic Info Section */}
+                    <section>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Edit3 className="w-4 h-4" /> 基本信息
+                        </h3>
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">应用名称</label>
+                                <input 
+                                    type="text" 
+                                    value={config.appName} 
+                                    onChange={(e) => handleInputChange('appName', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">开发者名称</label>
+                                <input 
+                                    type="text" 
+                                    value={config.devName} 
+                                    onChange={(e) => handleInputChange('devName', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">应用描述</label>
+                                <textarea 
+                                    value={config.description}
+                                    onChange={(e) => handleInputChange('description', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                        </div>
+                    </section>
+                    
+                    {/* Metrics Section */}
+                    <section>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Database className="w-4 h-4" /> 商店数据
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-400">评分</label>
+                                <input type="text" value={config.rating} onChange={(e) => handleInputChange('rating', e.target.value)} placeholder="4.5" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-400">下载量</label>
+                                <input type="text" value={config.downloads} onChange={(e) => handleInputChange('downloads', e.target.value)} placeholder="1B+" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-400">应用大小</label>
+                                <input type="text" value={config.size} onChange={(e) => handleInputChange('size', e.target.value)} placeholder="45 MB" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                             </div>
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-400">分级</label>
+                                <input type="text" value={config.ratedFor} onChange={(e) => handleInputChange('ratedFor', e.target.value)} placeholder="3+" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                             </div>
                         </div>
                     </section>
 

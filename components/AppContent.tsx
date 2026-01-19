@@ -1,22 +1,40 @@
 import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig, I18nStrings } from '../types';
-import { Star, ArrowLeft, ShieldCheck, X } from './IconComponents';
+import { Star, ArrowLeft, ShieldCheck } from './IconComponents';
 
 interface AppContentProps {
   config: AppConfig;
   strings: I18nStrings;
+  galleryHeight: number;
 }
 
-export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
-  // Drag to Scroll Logic
+const swipeVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 1000 : -1000,
+    opacity: 0
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? 1000 : -1000,
+    opacity: 0
+  })
+};
+
+export const AppContent: React.FC<AppContentProps> = ({ config, strings, galleryHeight }) => {
+  // Drag to Scroll Logic for Gallery List
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Lightbox Logic
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  // Lightbox Logic (Swipeable)
+  const [[lightboxIndex, direction], setLightboxPage] = useState<[number | null, number]>([null, 0]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
@@ -41,32 +59,79 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
     scrollRef.current.scrollLeft = scrollLeft - walk;
   };
 
-  const handleImageClick = (src: string, e: React.MouseEvent) => {
+  const handleImageClick = (index: number) => {
     // Prevent opening lightbox if user was dragging
     if (isDragging) return; 
-    setLightboxSrc(src);
+    setLightboxPage([index, 0]);
   };
+
+  const closeLightbox = () => {
+    setLightboxPage([null, 0]);
+  };
+
+  const paginate = (newDirection: number) => {
+    if (lightboxIndex === null) return;
+    const newIndex = lightboxIndex + newDirection;
+    if (newIndex >= 0 && newIndex < config.screenshots.length) {
+      setLightboxPage([newIndex, newDirection]);
+    }
+  };
+
+  const currentLightboxSrc = lightboxIndex !== null ? config.screenshots[lightboxIndex] : null;
 
   return (
     <div className="pb-8 bg-white min-h-full">
-      {/* Lightbox Modal (Edge-to-Edge) */}
-      <AnimatePresence>
-        {lightboxSrc && (
+      {/* Lightbox Modal (Swipeable, Edge-to-Edge) */}
+      <AnimatePresence initial={false} custom={direction}>
+        {lightboxIndex !== null && currentLightboxSrc && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer"
-            onClick={() => setLightboxSrc(null)}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+            onClick={closeLightbox}
           >
-            <button className="absolute top-6 right-6 text-white/70 hover:text-white z-50 p-2 bg-black/20 rounded-full">
-               <X className="w-8 h-8" />
-            </button>
-            <img 
-              src={lightboxSrc} 
+            {/* Immersive View: No X button, just content */}
+            
+            <motion.img 
+              key={lightboxIndex}
+              custom={direction}
+              variants={swipeVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(e, { offset, velocity }) => {
+                const swipe = swipePower(offset.x, velocity.x);
+
+                if (swipe < -10000) {
+                  paginate(1); // Next
+                } else if (swipe > 10000) {
+                  paginate(-1); // Prev
+                }
+              }}
+              onClick={(e) => e.stopPropagation()} // Clicking image doesn't close
+              src={currentLightboxSrc} 
               alt="Full screen" 
-              className="w-full h-auto max-h-screen object-contain pointer-events-none select-none"
+              className="w-full h-auto max-h-screen object-contain absolute select-none cursor-grab active:cursor-grabbing"
             />
+            
+            {/* Optional: Simple dot indicators for context */}
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 pointer-events-none">
+                {config.screenshots.map((_, idx) => (
+                    <div 
+                        key={idx} 
+                        className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === lightboxIndex ? 'bg-white' : 'bg-white/30'}`} 
+                    />
+                ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -123,7 +188,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
         </button>
       </div>
 
-      {/* Screenshots Gallery - Fixed Height h-64 (Density Fix) & Drag to Scroll */}
+      {/* Screenshots Gallery - No CSS Height Classes */}
       <div className="mt-2 mb-6">
         <div 
           ref={scrollRef}
@@ -131,7 +196,8 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          className={`flex overflow-x-auto h-64 px-6 pb-0 no-scrollbar items-center select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          style={{ height: `${galleryHeight}px` }} 
+          className={`flex overflow-x-auto px-6 pb-0 no-scrollbar items-center select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
             <div className="flex flex-nowrap h-full gap-3">
               {config.screenshots.length > 0 ? (
@@ -144,9 +210,8 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
                       src={src}
                       alt={`Screenshot ${idx}`}
                       draggable={false}
-                      onClick={(e) => handleImageClick(src, e)}
-                      // h-full forces the image to take container height (256px). w-auto maintains aspect ratio.
-                      // result: smaller, denser images.
+                      onClick={(e) => handleImageClick(idx)}
+                      // Images are h-full of the container (which has inline px height)
                       className="h-full w-auto max-w-none object-contain rounded-xl shadow-sm border border-gray-100 hover:opacity-95 active:scale-[0.98] transition-transform"
                   />
                   ))
@@ -203,4 +268,9 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
       <div className="h-20" />
     </div>
   );
+};
+
+// Physics helper for swipe velocity calculation
+const swipePower = (offset: number, velocity: number) => {
+  return Math.abs(offset) * velocity;
 };
