@@ -1,0 +1,5 @@
+{
+  "name": "Google Play Mockup Studio",
+  "description": "A high-fidelity Google Play Store listing generator with real-time preview, I18n support, and screenshot management.",
+  "requestFramePermissions": []
+}
