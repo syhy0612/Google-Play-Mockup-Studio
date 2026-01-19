@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig, Language, I18nStrings } from '../types';
 import { ImageIcon, Smartphone, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3 } from './IconComponents';
@@ -15,7 +15,6 @@ interface EditorPanelProps {
   setGalleryHeight: (h: number) => void;
 }
 
-// NOTE: Editor UI is STATIC CHINESE per v1.5 requirements.
 export const EditorPanel: React.FC<EditorPanelProps> = ({ 
   config, 
   setConfig, 
@@ -26,6 +25,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   galleryHeight,
   setGalleryHeight
 }) => {
+  const [tagInput, setTagInput] = useState("");
   
   const handleInputChange = (field: keyof AppConfig, value: string) => {
     setConfig(prev => ({ ...prev, [field]: value }));
@@ -61,6 +61,18 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     }));
   };
 
+  // Tag Management Logic
+  const addTag = () => {
+    if (tagInput.trim()) {
+        setConfig(prev => ({...prev, tags: [...prev.tags, tagInput.trim()]}));
+        setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setConfig(prev => ({...prev, tags: prev.tags.filter(t => t !== tagToRemove)}));
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -94,57 +106,69 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
                 <div className="p-6 space-y-8">
                     
-                    {/* Language & Version */}
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-600">预览语言</span>
-                            <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
-                                <button 
-                                    onClick={() => setLang('en')}
-                                    className={`px-3 py-1.5 text-xs font-bold transition-colors ${lang === 'en' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                                >
-                                    EN
-                                </button>
-                                <button 
-                                    onClick={() => setLang('zh')}
-                                    className={`px-3 py-1.5 text-xs font-bold transition-colors ${lang === 'zh' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-                                >
-                                    中文
-                                </button>
-                            </div>
-                         </div>
-                         <div className="mt-2 text-xs text-right text-gray-400">
-                             v1.8 (Integrated Menu)
-                         </div>
-                    </div>
-
-                    {/* v1.8: Height Debugger Updated Range */}
+                    {/* SECTION 1: Basic Info */}
                     <section>
                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Settings className="w-4 h-4" /> 布局调试
+                            <Edit3 className="w-4 h-4" /> 基本信息
                         </h3>
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                            <div className="flex justify-between items-center">
-                                <label className="text-xs font-bold text-gray-700">截图区域高度</label>
-                                <span className="text-xs text-blue-600 font-mono">{galleryHeight}px</span>
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">应用名称</label>
+                                <input 
+                                    type="text" 
+                                    value={config.appName} 
+                                    onChange={(e) => handleInputChange('appName', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
                             </div>
-                            <input
-                                type="range"
-                                min="100"
-                                max="1000"
-                                step="10"
-                                value={galleryHeight}
-                                onChange={(e) => setGalleryHeight(Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            />
-                            <div className="flex justify-between text-[10px] text-gray-400">
-                                <span>100px</span>
-                                <span>1000px</span>
+                            <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">开发者名称</label>
+                                <input 
+                                    type="text" 
+                                    value={config.devName} 
+                                    onChange={(e) => handleInputChange('devName', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            
+                            {/* Tag Manager */}
+                            <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">应用标签</label>
+                                <div className="flex gap-2 mb-2">
+                                    <input
+                                        type="text"
+                                        value={tagInput}
+                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && addTag()}
+                                        placeholder="Add tag (e.g. Productivity)"
+                                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                    <button onClick={addTag} className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">Add</button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {config.tags.map((tag, i) => (
+                                        <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                            {tag}
+                                            <button onClick={() => removeTag(tag)} className="ml-1.5 hover:text-blue-900 focus:outline-none">
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                             <div className="space-y-1">
+                                <label className="text-xs text-gray-500 ml-1">应用描述</label>
+                                <textarea 
+                                    value={config.description}
+                                    onChange={(e) => handleInputChange('description', e.target.value)}
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
                             </div>
                         </div>
                     </section>
 
-                    {/* Visual Assets Section */}
+                    {/* SECTION 2: Visual Assets */}
                     <section>
                          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <ImageIcon className="w-4 h-4" /> 视觉素材
@@ -216,43 +240,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             </div>
                         </div>
                     </section>
-
-                    {/* Basic Info Section */}
-                    <section>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Edit3 className="w-4 h-4" /> 基本信息
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">应用名称</label>
-                                <input 
-                                    type="text" 
-                                    value={config.appName} 
-                                    onChange={(e) => handleInputChange('appName', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">开发者名称</label>
-                                <input 
-                                    type="text" 
-                                    value={config.devName} 
-                                    onChange={(e) => handleInputChange('devName', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                             <div className="space-y-1">
-                                <label className="text-xs text-gray-500 ml-1">应用描述</label>
-                                <textarea 
-                                    value={config.description}
-                                    onChange={(e) => handleInputChange('description', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                        </div>
-                    </section>
                     
-                    {/* Metrics Section */}
+                    {/* SECTION 3: Store Data */}
                     <section>
                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <Database className="w-4 h-4" /> 商店数据
@@ -273,6 +262,54 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                              <div className="space-y-1">
                                 <label className="text-xs text-gray-400">分级</label>
                                 <input type="text" value={config.ratedFor} onChange={(e) => handleInputChange('ratedFor', e.target.value)} placeholder="3+" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                             </div>
+                        </div>
+                    </section>
+
+                    {/* SECTION 4: Settings (Language + Height) */}
+                    <section>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Settings className="w-4 h-4" /> 设置
+                        </h3>
+                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-4">
+                            {/* Language */}
+                             <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-600">预览语言</span>
+                                <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
+                                    <button 
+                                        onClick={() => setLang('en')}
+                                        className={`px-3 py-1.5 text-xs font-bold transition-colors ${lang === 'en' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        EN
+                                    </button>
+                                    <button 
+                                        onClick={() => setLang('zh')}
+                                        className={`px-3 py-1.5 text-xs font-bold transition-colors ${lang === 'zh' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                    >
+                                        中文
+                                    </button>
+                                </div>
+                             </div>
+
+                             {/* Height Debugger */}
+                             <div className="pt-2 border-t border-gray-200">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-bold text-gray-700">截图区域高度</label>
+                                    <span className="text-xs text-blue-600 font-mono">{galleryHeight}px</span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="100"
+                                    max="1000"
+                                    step="10"
+                                    value={galleryHeight}
+                                    onChange={(e) => setGalleryHeight(Number(e.target.value))}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                />
+                             </div>
+                             
+                             <div className="text-xs text-right text-gray-400 pt-1">
+                                 v2.3 (Dynamic Tags)
                              </div>
                         </div>
                     </section>

@@ -4,14 +4,28 @@ import { INITIAL_CONFIG, DICTIONARY } from './constants';
 import { PreviewHeader } from './components/PreviewHeader';
 import { AppContent } from './components/AppContent';
 import { EditorPanel } from './components/EditorPanel';
-// Removed unused icon imports since Status Bar and FAB are gone
-import { Edit3 } from './components/IconComponents';
+
+// Fix: Use string paths for assets instead of imports.
+// Direct imports of non-JS files (like .png) fail in browser-native ESM environments 
+// or environments without specific image loaders configured.
+const localLogo = './assets/logo.png';
+const img1 = './assets/1.png';
+const img2 = './assets/2.png';
+const img3 = './assets/3.png';
+const img4 = './assets/4.png';
+const img5 = './assets/5.png';
 
 const App: React.FC = () => {
-  const [config, setConfig] = useState<AppConfig>(INITIAL_CONFIG);
-  const [lang, setLang] = useState<Language>('en'); // Default to English for Preview content
+  // v2.3: Initialize state with Local Assets
+  const [config, setConfig] = useState<AppConfig>({
+    ...INITIAL_CONFIG,
+    logoUrl: localLogo,
+    screenshots: [img1, img2, img3, img4, img5]
+  });
+  
+  const [lang, setLang] = useState<Language>('en'); 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [galleryHeight, setGalleryHeight] = useState(160); // v1.9: Default Height 160px
+  const [galleryHeight, setGalleryHeight] = useState(160); // v2.1: Default Height 160px
 
   const strings = DICTIONARY[lang];
 
@@ -20,8 +34,6 @@ const App: React.FC = () => {
       
       {/* Mobile Preview Frame */}
       <div className="relative w-full max-w-[480px] h-[100vh] md:h-[90vh] bg-white md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-gray-300 md:border-gray-800 md:border-[8px]">
-        
-        {/* v1.8: Status Bar REMOVED for native feel */}
         
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative bg-white flex flex-col">
@@ -38,8 +50,6 @@ const App: React.FC = () => {
              <div className="w-32 h-1 bg-gray-900 rounded-full opacity-20"></div>
          </div>
       </div>
-
-      {/* v1.8: FAB Removed. Settings triggered by Header Menu. */}
 
       {/* Editor Drawer */}
       <EditorPanel 
