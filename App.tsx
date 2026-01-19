@@ -8,12 +8,12 @@ import { EditorPanel } from './components/EditorPanel';
 // Fix: Use string paths for assets instead of imports.
 // Direct imports of non-JS files (like .png) fail in browser-native ESM environments 
 // or environments without specific image loaders configured.
-const localLogo = './assets/logo.png';
-const img1 = './assets/1.png';
-const img2 = './assets/2.png';
-const img3 = './assets/3.png';
-const img4 = './assets/4.png';
-const img5 = './assets/5.png';
+const localLogo = '/assets/logo.png';
+const img1 = '/assets/1.png';
+const img2 = '/assets/2.png';
+const img3 = '/assets/3.png';
+const img4 = '/assets/4.png';
+const img5 = '/assets/5.png';
 
 const App: React.FC = () => {
   // v2.3: Initialize state with Local Assets
