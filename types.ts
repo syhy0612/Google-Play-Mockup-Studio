@@ -16,6 +16,13 @@ export interface AppConfig {
   tags: string[];
 }
 
+export interface SavedScheme {
+  id: string;
+  name: string;
+  config: AppConfig;
+  savedAt: number;
+}
+
 export interface I18nStrings {
   // Preview
   install: string;

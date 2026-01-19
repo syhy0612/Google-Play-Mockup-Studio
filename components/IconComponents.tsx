@@ -21,7 +21,9 @@ import {
   Wifi,
   Battery,
   Signal,
-  Menu
+  Menu,
+  Save,
+  Check
 } from 'lucide-react';
 
 export const StarRating = ({ rating }: { rating: string }) => (
@@ -53,5 +55,7 @@ export {
   Wifi,
   Battery,
   Signal,
-  Menu
+  Menu,
+  Save,
+  Check
 };
