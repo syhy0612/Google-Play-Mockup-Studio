@@ -1,9 +1,9 @@
 import { AppConfig, I18nStrings, Language } from './types';
 
 export const INITIAL_CONFIG: AppConfig = {
-  appName: "Gemini AI Assistant",
-  devName: "Google LLC",
-  description: "Experience the next generation of AI. Draft emails, brainstorm ideas, and code with the help of Gemini's advanced reasoning capabilities.",
+  appName: "Play Mockup",
+  devName: "Telegram@MayGoogle",
+  description: "It simulates the Google Play app store experience and supports native swiping and image editing.",
   rating: "4.7",
   downloads: "1B+",
   reviews: "12M",
@@ -13,12 +13,9 @@ export const INITIAL_CONFIG: AppConfig = {
   logoUrl: "https://picsum.photos/id/237/200/200", 
   bannerUrl: "https://picsum.photos/800/400",
   screenshots: [
-    "https://picsum.photos/id/20/800/400", // Landscape
-    "https://picsum.photos/id/10/400/800", // Portrait
-    "https://picsum.photos/id/30/400/800", // Portrait
-    "https://picsum.photos/id/42/400/800", // Portrait
+
   ],
-  tags: ["Productivity", "AI", "Tools"]
+  tags: ["Developer", "Tools", "Design"]
 };
 
 // NOTE: These strings are ONLY for the Preview Content inside the phone frame.

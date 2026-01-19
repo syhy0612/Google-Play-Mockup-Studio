@@ -211,7 +211,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                             <img src={src} alt="" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 text-xs text-gray-500 font-mono truncate">
-                                            Asset_{idx + 1}.png
+                                            图{idx + 1}.png
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <button 
