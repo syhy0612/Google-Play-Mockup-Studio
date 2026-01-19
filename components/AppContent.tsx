@@ -44,29 +44,28 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
   const handleImageClick = (src: string, e: React.MouseEvent) => {
     // Prevent opening lightbox if user was dragging
     if (isDragging) return; 
-    // Small threshold check could be added here, but isDragging state covers most 'drag' intents
     setLightboxSrc(src);
   };
 
   return (
     <div className="pb-8 bg-white min-h-full">
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal (Edge-to-Edge) */}
       <AnimatePresence>
         {lightboxSrc && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+            className="fixed inset-0 z-[100] bg-black flex items-center justify-center cursor-pointer"
             onClick={() => setLightboxSrc(null)}
           >
-            <button className="absolute top-8 right-8 text-white/70 hover:text-white">
+            <button className="absolute top-6 right-6 text-white/70 hover:text-white z-50 p-2 bg-black/20 rounded-full">
                <X className="w-8 h-8" />
             </button>
             <img 
               src={lightboxSrc} 
               alt="Full screen" 
-              className="max-h-full max-w-full object-contain pointer-events-none select-none"
+              className="w-full h-auto max-h-screen object-contain pointer-events-none select-none"
             />
           </motion.div>
         )}
@@ -124,7 +123,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
         </button>
       </div>
 
-      {/* Screenshots Gallery - Fixed Height & Drag to Scroll */}
+      {/* Screenshots Gallery - Fixed Height h-64 (Density Fix) & Drag to Scroll */}
       <div className="mt-2 mb-6">
         <div 
           ref={scrollRef}
@@ -132,7 +131,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
-          className={`flex overflow-x-auto h-[400px] px-6 pb-0 no-scrollbar items-center select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex overflow-x-auto h-64 px-6 pb-0 no-scrollbar items-center select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
             <div className="flex flex-nowrap h-full gap-3">
               {config.screenshots.length > 0 ? (
@@ -146,8 +145,8 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings }) => {
                       alt={`Screenshot ${idx}`}
                       draggable={false}
                       onClick={(e) => handleImageClick(src, e)}
-                      // Crucial: h-full forces the image to take container height. w-auto maintains aspect ratio.
-                      // max-w-none prevents flexbox from shrinking it.
+                      // h-full forces the image to take container height (256px). w-auto maintains aspect ratio.
+                      // result: smaller, denser images.
                       className="h-full w-auto max-w-none object-contain rounded-xl shadow-sm border border-gray-100 hover:opacity-95 active:scale-[0.98] transition-transform"
                   />
                   ))

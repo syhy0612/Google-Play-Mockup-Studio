@@ -110,7 +110,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             </div>
                          </div>
                          <div className="mt-2 text-xs text-right text-gray-400">
-                             Google Play Simulator v1.5
+                             v1.6 (Deploy Ready)
                          </div>
                     </div>
 
