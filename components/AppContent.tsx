@@ -174,7 +174,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
       className="pb-20"
     >
       {/* Header */}
-      <div className="sticky top-0 bg-white z-20 px-4 py-3 shadow-sm">
+      <div className="sticky top-0 bg-white z-20 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-sm">
         <div className="flex items-center gap-3 bg-[#f1f3f4] rounded-full px-4 py-2.5 shadow-sm mb-3">
           <Menu className="w-5 h-5 text-gray-600" />
           <div 
@@ -263,7 +263,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
         className="pb-20 bg-white min-h-full"
     >
         {/* Search Header */}
-        <div className="sticky top-0 bg-white z-20 px-2 py-2 flex items-center gap-2 shadow-sm border-b border-gray-100">
+        <div className="sticky top-0 bg-white z-20 px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] flex items-center gap-2 shadow-sm border-b border-gray-100">
             <button onClick={() => setCurrentView('discovery')} className="p-2 text-gray-500">
                 <ArrowLeft className="w-6 h-6" />
             </button>
@@ -340,7 +340,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
       )}
 
       {/* Standard Header (Restored) */}
-      <div className={`sticky top-0 z-20 flex items-center justify-between px-2 py-3 ${showBanner ? 'bg-transparent -mt-[100%] mb-[calc(100%-56px)]' : 'bg-white'}`}>
+      <div className={`sticky top-0 z-20 flex items-center justify-between px-2 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] ${showBanner ? 'bg-transparent -mt-[100%] mb-[calc(100%-56px)]' : 'bg-white'}`}>
         <button onClick={handleBack} className="p-2 text-gray-800">
             <ArrowLeft className="w-6 h-6" />
         </button>
