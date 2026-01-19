@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.0.1",
-    "@capacitor/cli": "^8.0.1",
     "@capacitor/core": "^8.0.1",
     "framer-motion": "^12.27.0",
     "lucide-react": "^0.562.0",
@@ -19,6 +18,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.1",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
