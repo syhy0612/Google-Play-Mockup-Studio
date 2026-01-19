@@ -383,7 +383,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 className="fixed top-0 right-0 bottom-0 w-full md:w-[480px] bg-white shadow-2xl z-[70] flex flex-col"
             >
                 {/* Header */}
-                <div className="bg-white z-10 px-6 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+                <div className="bg-white z-10 px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-gray-100 flex items-center justify-between shrink-0">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <Settings className="w-5 h-5 text-[#2656C8]" />
                         配置面板

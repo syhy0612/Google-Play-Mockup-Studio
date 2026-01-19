@@ -1,4 +1,4 @@
-name: Build Android APK (Debug Mode)
+name: Build Android APK
 
 on:
   push:
@@ -12,14 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 🕵️【侦探1】检查云端拉取到的代码到底是不是新的？
-      - name: 🕵️ Debug - Check Commit Info
+      # 🕵️【侦探1】确认代码同步情况
+      - name: 🕵️ Log - Check Commit Info
         run: |
           echo "=========================================="
           echo "正在构建的提交记录："
           git log -1 --pretty=%B
           echo "=========================================="
-          echo "检查关键文件是否存在（确认代码同步成功）..."
+          echo "检查关键源文件..."
           ls -R src/ | head -n 10
 
       - name: Setup Node.js
@@ -42,38 +42,55 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # ⚡ 为了防止缓存，先手动清理一下安卓里的旧网页
+      # 🧹【护法1】暴力清理旧资源 (防止样式不更新)
       - name: Clean Old Assets
         run: rm -rf android/app/src/main/assets/public/*
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 🕵️【侦探2】检查名字到底改没改？(直接打印 strings.xml 内容)
-      - name: 🕵️ Debug - Verify App Name
+      # 🕵️【侦探2】确认名字改没改 (防止名字不更新)
+      - name: 🕵️ Log - Verify App Name
         run: |
           echo "=========================================="
-          echo "正在读取 android/app/src/main/res/values/strings.xml 内容："
+          echo "读取 strings.xml 内容："
           cat android/app/src/main/res/values/strings.xml
           echo "=========================================="
-          
-      # 🕵️【侦探3】检查网页文件到底有没有塞进去？
-      - name: 🕵️ Debug - Verify Web Assets
+
+      # 🕵️【侦探3】确认网页有没有塞进去
+      - name: 🕵️ Log - Verify Web Assets
         run: |
           echo "=========================================="
-          echo "检查 android/app/src/main/assets/public 目录："
+          echo "检查 public 目录文件："
           ls -l android/app/src/main/assets/public
           echo "=========================================="
 
-      - name: Build APK (Debug)
+      # 🧹【护法2】正式打包 (带 clean，防止 Gradle 偷懒用缓存)
+      - name: Build Release APK
         working-directory: ./android
         run: |
           chmod +x gradlew
-          # 加了一个 clean，强制清空缓存再打包
-          ./gradlew clean assembleDebug
+          ./gradlew clean assembleRelease
 
+      # ✍️ 签名步骤 (正式版必须有这个)
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+
+      # 🏷️ 改名 (去掉繁琐的 release 后缀)
+      - name: Rename APK
+        run: |
+          mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "Play Mockup.apk"
+
+      # 📤 上传 (最终你会得到干净的 "Play Mockup.zip")
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Play Mockup Debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Play Mockup
+          path: "Play Mockup.apk"
