@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (Final Release)
 
 on:
   push:
@@ -42,14 +42,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 🧹【护法1】暴力清理旧资源 (防止样式不更新)
+      # 🧹【护法1】暴力清理旧资源
       - name: Clean Old Assets
         run: rm -rf android/app/src/main/assets/public/*
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 🕵️【侦探2】确认名字改没改 (防止名字不更新)
+      # 🕵️【侦探2】确认名字改没改
       - name: 🕵️ Log - Verify App Name
         run: |
           echo "=========================================="
@@ -65,14 +65,14 @@ jobs:
           ls -l android/app/src/main/assets/public
           echo "=========================================="
 
-      # 🧹【护法2】正式打包 (带 clean，防止 Gradle 偷懒用缓存)
+      # 🧹【护法2】正式打包
       - name: Build Release APK
         working-directory: ./android
         run: |
           chmod +x gradlew
           ./gradlew clean assembleRelease
 
-      # ✍️ 签名步骤 (正式版必须有这个)
+      # ✍️ 签名步骤
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -82,13 +82,15 @@ jobs:
           alias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "34.0.0"
 
-      # 🏷️ 改名 (去掉繁琐的 release 后缀)
+      # 🏷️ 改名
       - name: Rename APK
         run: |
           mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "Play Mockup.apk"
 
-      # 📤 上传 (最终你会得到干净的 "Play Mockup.zip")
+      # 📤 上传
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
