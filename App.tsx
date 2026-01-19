@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AppConfig, Language } from './types';
 import { INITIAL_CONFIG, DICTIONARY } from './constants';
-import { PreviewHeader } from './components/PreviewHeader';
 import { AppContent } from './components/AppContent';
 import { EditorPanel } from './components/EditorPanel';
 
@@ -37,11 +36,11 @@ const App: React.FC = () => {
         
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative bg-white flex flex-col">
-            <PreviewHeader onOpenSettings={() => setIsEditorOpen(true)} />
             <AppContent 
               config={config} 
               strings={strings} 
               galleryHeight={galleryHeight} 
+              onOpenSettings={() => setIsEditorOpen(true)}
             />
         </div>
 

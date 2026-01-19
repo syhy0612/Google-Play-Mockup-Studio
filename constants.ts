@@ -11,7 +11,7 @@ export const INITIAL_CONFIG: AppConfig = {
   ratedFor: "3+",
   version: "1.0.0",
   logoUrl: "https://picsum.photos/id/237/200/200", 
-  bannerUrl: "https://picsum.photos/800/400",
+  bannerUrl: "/assets/Feature.png",
   screenshots: [
 
   ],

@@ -25,7 +25,12 @@ import {
   Save,
   Check,
   Box,
-  Upload
+  Upload,
+  Home,
+  Gamepad2,
+  Mic,
+  LayoutGrid,
+  BookOpen
 } from 'lucide-react';
 
 export const StarRating = ({ rating }: { rating: string }) => (
@@ -61,5 +66,10 @@ export {
   Save, 
   Check,
   Box,
-  Upload
+  Upload,
+  Home,
+  Gamepad2,
+  Mic,
+  LayoutGrid,
+  BookOpen
 };
