@@ -1,4 +1,4 @@
-name: Build Android APK (Final Release)
+name: Build Android APK (Debug - Clean Mode)
 
 on:
   push:
@@ -11,16 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # 🕵️【侦探1】确认代码同步情况
-      - name: 🕵️ Log - Check Commit Info
-        run: |
-          echo "=========================================="
-          echo "正在构建的提交记录："
-          git log -1 --pretty=%B
-          echo "=========================================="
-          echo "检查关键源文件..."
-          ls -R src/ | head -n 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,55 +32,38 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 🧹【护法1】暴力清理旧资源
-      - name: Clean Old Assets
+      # 🧹【第一道防线】清理网页资源
+      - name: Clean Old Web Assets
         run: rm -rf android/app/src/main/assets/public/*
 
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # 🕵️【侦探2】确认名字改没改
-      - name: 🕵️ Log - Verify App Name
-        run: |
-          echo "=========================================="
-          echo "读取 strings.xml 内容："
-          cat android/app/src/main/res/values/strings.xml
-          echo "=========================================="
+      # 💣【核心防线 - 你的猜测对应方案】
+      # 在打包前，强制删除整个 build 目录！
+      # 这能证明：如果后面生成了 APK，那绝对是刚才现做出来的，绝不可能是旧的。
+      - name: Nuke Build Folder
+        run: rm -rf android/app/build
 
-      # 🕵️【侦探3】确认网页有没有塞进去
-      - name: 🕵️ Log - Verify Web Assets
-        run: |
-          echo "=========================================="
-          echo "检查 public 目录文件："
-          ls -l android/app/src/main/assets/public
-          echo "=========================================="
-
-      # 🧹【护法2】正式打包
-      - name: Build Release APK
+      # 🔨【构建步骤】
+      - name: Build Debug APK
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew clean assembleRelease
+          # 再次加上 clean 双重保险
+          ./gradlew clean assembleDebug
 
-      # ✍️ 签名步骤
-      - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
+      # 🕵️【验尸步骤】检查生成时间
+      # 如果这里打印的时间不是当前几秒内的，那就是见鬼了
+      - name: Check APK Timestamp
+        run: |
+          echo "APK 生成时间："
+          ls -l android/app/build/outputs/apk/debug/app-debug.apk
 
-      # 🏷️ 改名
       - name: Rename APK
         run: |
-          mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "Play Mockup.apk"
+          mv android/app/build/outputs/apk/debug/app-debug.apk "Play Mockup.apk"
 
-      # 📤 上传
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
