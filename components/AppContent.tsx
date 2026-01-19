@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig, I18nStrings } from '../types';
+import { INITIAL_CONFIG } from '../constants';
 import { Star, ArrowLeft, ShieldCheck } from './IconComponents';
 
 interface AppContentProps {
@@ -110,16 +111,16 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
         className="px-6 pt-[env(safe-area-inset-top)] mt-4 flex gap-4"
       >
         <img 
-            src={config.logoUrl} 
+            src={config.logoUrl || INITIAL_CONFIG.logoUrl} 
             alt="App Logo" 
             className="w-[72px] h-[72px] rounded-2xl shadow-sm object-cover flex-shrink-0"
         />
         <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
             <h1 className="text-2xl font-medium text-gray-900 leading-tight truncate">
-                {config.appName}
+                {config.appName || INITIAL_CONFIG.appName}
             </h1>
             <div className="text-[#01875f] font-medium text-sm truncate">
-                {config.devName}
+                {config.devName || INITIAL_CONFIG.devName}
             </div>
              <div className="text-gray-500 text-xs truncate mt-1">
                 Contains ads • In-app purchases
@@ -131,20 +132,20 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
       <div className="flex items-center justify-between px-6 py-6 mt-2">
         <div className="flex flex-col items-center flex-1 border-r border-gray-200 last:border-0">
             <div className="flex items-center font-medium text-gray-800">
-                {config.rating} <Star className="w-3 h-3 ml-1 fill-current text-gray-800" />
+                {config.rating || INITIAL_CONFIG.rating} <Star className="w-3 h-3 ml-1 fill-current text-gray-800" />
             </div>
             <div className="text-xs text-gray-500 mt-1">{strings.reviews}</div>
         </div>
         <div className="flex flex-col items-center flex-1 border-r border-gray-200 last:border-0">
-            <div className="font-medium text-gray-800">{config.size}</div>
+            <div className="font-medium text-gray-800">{config.size || INITIAL_CONFIG.size}</div>
             <div className="text-xs text-gray-500 mt-1">Size</div>
         </div>
         <div className="flex flex-col items-center flex-1 border-r border-gray-200 last:border-0">
-            <div className="font-medium text-gray-800">{config.ratedFor}</div>
+            <div className="font-medium text-gray-800">{config.ratedFor || INITIAL_CONFIG.ratedFor}</div>
             <div className="text-xs text-gray-500 mt-1">Rated for</div>
         </div>
         <div className="flex flex-col items-center flex-1">
-            <div className="font-medium text-gray-800">{config.downloads}</div>
+            <div className="font-medium text-gray-800">{config.downloads || INITIAL_CONFIG.downloads}</div>
             <div className="text-xs text-gray-500 mt-1">{strings.downloads}</div>
         </div>
       </div>
@@ -198,7 +199,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
             <ArrowLeft className="w-5 h-5 text-gray-500 rotate-180" /> 
         </div>
         <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">
-            {config.description}
+            {config.description || INITIAL_CONFIG.description}
         </p>
         
         <div className="mt-4 flex flex-wrap gap-2">

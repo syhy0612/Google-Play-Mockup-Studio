@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig, Language, I18nStrings, SavedScheme } from '../types';
-import { ImageIcon, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3, Save, Check, Download } from './IconComponents';
+import { INITIAL_CONFIG } from '../constants';
+import { ImageIcon, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3, Save, Check, Download, Box, Upload } from './IconComponents';
 
 interface EditorPanelProps {
   config: AppConfig;
@@ -14,6 +15,144 @@ interface EditorPanelProps {
   galleryHeight: number;
   setGalleryHeight: (h: number) => void;
 }
+
+// Reusable Input Component with Clear Button
+const InputGroup = ({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string }) => {
+    const displayValue = value === placeholder ? "" : value;
+    return (
+        <div className="space-y-1">
+            <label className="text-xs text-gray-500 ml-1">{label}</label>
+            <div className="relative group">
+                <input 
+                    type="text" 
+                    value={displayValue} 
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-8 transition-all placeholder:text-gray-400"
+                />
+                {displayValue && (
+                    <button 
+                        onClick={() => onChange('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                        title="Clear"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Reusable Textarea Component with Clear Button
+const TextAreaGroup = ({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (val: string) => void, placeholder?: string }) => {
+    const displayValue = value === placeholder ? "" : value;
+    return (
+        <div className="space-y-1">
+            <label className="text-xs text-gray-500 ml-1">{label}</label>
+            <div className="relative group">
+                <textarea 
+                    value={displayValue} 
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none pr-8 transition-all placeholder:text-gray-400"
+                />
+                {displayValue && (
+                    <button 
+                        onClick={() => onChange('')}
+                        className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 p-1 bg-white/80 rounded-full"
+                        title="Clear"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Custom Dialog Component
+interface DialogProps {
+    isOpen: boolean;
+    type: 'confirm' | 'prompt';
+    title: string;
+    message?: string;
+    defaultValue?: string;
+    onConfirm: (value?: string) => void;
+    onClose: () => void;
+}
+
+const CustomDialog = ({ isOpen, type, title, message, defaultValue, onConfirm, onClose }: DialogProps) => {
+    const [inputValue, setInputValue] = useState(defaultValue || '');
+
+    useEffect(() => {
+        if (isOpen) setInputValue(defaultValue || '');
+    }, [defaultValue, isOpen]);
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+                        onClick={onClose} 
+                    />
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden z-[90]"
+                    >
+                        <div className="p-6">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+                            {message && <p className="text-sm text-gray-600 mb-4 leading-relaxed">{message}</p>}
+                            
+                            {type === 'prompt' && (
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-8"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') onConfirm(inputValue);
+                                        }}
+                                    />
+                                    {inputValue && (
+                                        <button 
+                                            onClick={() => setInputValue('')}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
+                            <button 
+                                onClick={onClose}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                            >
+                                取消
+                            </button>
+                            <button 
+                                onClick={() => onConfirm(type === 'prompt' ? inputValue : undefined)}
+                                className="px-4 py-2 text-sm font-medium text-white bg-[#2656C8] hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+                            >
+                                确认
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+};
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({ 
   config, 
@@ -28,6 +167,23 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   const [activeTab, setActiveTab] = useState<'info' | 'visual' | 'schemes'>('info');
   const [tagInput, setTagInput] = useState("");
   const [schemes, setSchemes] = useState<SavedScheme[]>([]);
+
+  // Dialog State
+  const [dialog, setDialog] = useState<{
+    isOpen: boolean;
+    type: 'confirm' | 'prompt';
+    title: string;
+    message?: string;
+    defaultValue?: string;
+    onConfirm: (val?: string) => void;
+  }>({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    onConfirm: () => {}
+  });
+
+  const closeDialog = () => setDialog(prev => ({ ...prev, isOpen: false }));
 
   // Load schemes from localStorage on mount
   useEffect(() => {
@@ -46,30 +202,103 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     localStorage.setItem('mockup_schemes', JSON.stringify(newSchemes));
   };
 
+  const getNextDefaultName = () => {
+    const now = new Date();
+    const datePart = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
+    const prefix = `${datePart}-`;
+    
+    const existingSuffixes = schemes
+        .filter(s => s.name.startsWith(prefix))
+        .map(s => s.name.slice(prefix.length));
+    
+    if (existingSuffixes.length === 0) return `${prefix}A`;
+
+    // Generate A, B, ... Z, AA, AB ...
+    let counter = 0;
+    while (true) {
+        let suffix = "";
+        let i = counter;
+        // Convert counter to base-26 letters (0->A, 25->Z, 26->AA)
+        do {
+            suffix = String.fromCharCode(65 + (i % 26)) + suffix;
+            i = Math.floor(i / 26) - 1;
+        } while (i >= 0);
+
+        if (!existingSuffixes.includes(suffix)) {
+            return prefix + suffix;
+        }
+        counter++;
+    }
+  };
+
+  const handleRenameScheme = (scheme: SavedScheme) => {
+    setDialog({
+        isOpen: true,
+        type: 'prompt',
+        title: '重命名方案',
+        message: '请输入新的方案名称',
+        defaultValue: scheme.name,
+        onConfirm: (newName) => {
+            if (!newName || newName === scheme.name) {
+                closeDialog();
+                return;
+            }
+            const updatedSchemes = schemes.map(s => 
+                s.id === scheme.id ? { ...s, name: newName } : s
+            );
+            saveSchemesToStorage(updatedSchemes);
+            closeDialog();
+        }
+    });
+  };
+
   const handleSaveScheme = () => {
-    const name = prompt("Enter a name for this scheme:", `${config.appName} - ${new Date().toLocaleDateString()}`);
-    if (!name) return;
-
-    const newScheme: SavedScheme = {
-      id: crypto.randomUUID(),
-      name,
-      config: { ...config },
-      savedAt: Date.now()
-    };
-
-    saveSchemesToStorage([newScheme, ...schemes]);
+    const defaultName = getNextDefaultName();
+    
+    setDialog({
+        isOpen: true,
+        type: 'prompt',
+        title: '保存方案',
+        message: '请输入方案名称',
+        defaultValue: defaultName,
+        onConfirm: (name) => {
+            if (!name) return;
+            const newScheme: SavedScheme = {
+                id: crypto.randomUUID(),
+                name,
+                config: { ...config },
+                savedAt: Date.now()
+            };
+            saveSchemesToStorage([newScheme, ...schemes]);
+            closeDialog();
+        }
+    });
   };
 
   const handleDeleteScheme = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this scheme?")) {
-      saveSchemesToStorage(schemes.filter(s => s.id !== id));
-    }
+    setDialog({
+        isOpen: true,
+        type: 'confirm',
+        title: '删除方案',
+        message: '确定要删除这个方案吗？此操作无法撤销。',
+        onConfirm: () => {
+            saveSchemesToStorage(schemes.filter(s => s.id !== id));
+            closeDialog();
+        }
+    });
   };
 
   const handleLoadScheme = (scheme: SavedScheme) => {
-    if (window.confirm(`Load scheme "${scheme.name}"? Current unsaved changes will be lost.`)) {
-        setConfig(scheme.config);
-    }
+    setDialog({
+        isOpen: true,
+        type: 'confirm',
+        title: '加载方案',
+        message: `确定要加载 "${scheme.name}" 吗？当前未保存的更改将会丢失。`,
+        onConfirm: () => {
+            setConfig(scheme.config);
+            closeDialog();
+        }
+    });
   };
   
   const handleInputChange = (field: keyof AppConfig, value: string) => {
@@ -180,37 +409,41 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             <section>
                                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">基本信息</h3>
                                 <div className="space-y-3">
-                                    <div className="space-y-1">
-                                        <label className="text-xs text-gray-500 ml-1">应用名称</label>
-                                        <input 
-                                            type="text" 
-                                            value={config.appName} 
-                                            onChange={(e) => handleInputChange('appName', e.target.value)}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs text-gray-500 ml-1">开发者名称</label>
-                                        <input 
-                                            type="text" 
-                                            value={config.devName} 
-                                            onChange={(e) => handleInputChange('devName', e.target.value)}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                                    <InputGroup 
+                                        label="应用名称"
+                                        value={config.appName}
+                                        onChange={(val) => handleInputChange('appName', val)}
+                                        placeholder={INITIAL_CONFIG.appName}
+                                    />
+                                    <InputGroup 
+                                        label="开发者名称"
+                                        value={config.devName}
+                                        onChange={(val) => handleInputChange('devName', val)}
+                                        placeholder={INITIAL_CONFIG.devName}
+                                    />
                                     
                                     {/* Tag Manager */}
                                     <div className="space-y-1">
                                         <label className="text-xs text-gray-500 ml-1">应用标签</label>
                                         <div className="flex gap-2 mb-2">
-                                            <input
-                                                type="text"
-                                                value={tagInput}
-                                                onChange={(e) => setTagInput(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && addTag()}
-                                                placeholder="Add tag"
-                                                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                            />
+                                            <div className="relative flex-1 group">
+                                                <input
+                                                    type="text"
+                                                    value={tagInput}
+                                                    onChange={(e) => setTagInput(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && addTag()}
+                                                    placeholder="Add tag"
+                                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-8"
+                                                />
+                                                {tagInput && (
+                                                    <button 
+                                                        onClick={() => setTagInput('')}
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                             <button onClick={addTag} className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">Add</button>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
@@ -225,36 +458,22 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                         </div>
                                     </div>
 
-                                     <div className="space-y-1">
-                                        <label className="text-xs text-gray-500 ml-1">应用描述</label>
-                                        <textarea 
-                                            value={config.description}
-                                            onChange={(e) => handleInputChange('description', e.target.value)}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:ring-2 focus:ring-blue-500 outline-none"
-                                        />
-                                    </div>
+                                    <TextAreaGroup 
+                                        label="应用描述"
+                                        value={config.description}
+                                        onChange={(val) => handleInputChange('description', val)}
+                                        placeholder={INITIAL_CONFIG.description}
+                                    />
                                 </div>
                             </section>
 
                             <section>
                                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">商店数据</h3>
                                 <div className="grid grid-cols-2 gap-3">
-                                     <div className="space-y-1">
-                                        <label className="text-xs text-gray-400">评分</label>
-                                        <input type="text" value={config.rating} onChange={(e) => handleInputChange('rating', e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                                     </div>
-                                     <div className="space-y-1">
-                                        <label className="text-xs text-gray-400">下载量</label>
-                                        <input type="text" value={config.downloads} onChange={(e) => handleInputChange('downloads', e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                                     </div>
-                                     <div className="space-y-1">
-                                        <label className="text-xs text-gray-400">应用大小</label>
-                                        <input type="text" value={config.size} onChange={(e) => handleInputChange('size', e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                                     </div>
-                                     <div className="space-y-1">
-                                        <label className="text-xs text-gray-400">分级</label>
-                                        <input type="text" value={config.ratedFor} onChange={(e) => handleInputChange('ratedFor', e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-                                     </div>
+                                     <InputGroup label="评分" value={config.rating} onChange={(val) => handleInputChange('rating', val)} placeholder={INITIAL_CONFIG.rating} />
+                                     <InputGroup label="下载量" value={config.downloads} onChange={(val) => handleInputChange('downloads', val)} placeholder={INITIAL_CONFIG.downloads} />
+                                     <InputGroup label="应用大小" value={config.size} onChange={(val) => handleInputChange('size', val)} placeholder={INITIAL_CONFIG.size} />
+                                     <InputGroup label="分级" value={config.ratedFor} onChange={(val) => handleInputChange('ratedFor', val)} placeholder={INITIAL_CONFIG.ratedFor} />
                                 </div>
                             </section>
 
@@ -292,7 +511,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                             onChange={(e) => setGalleryHeight(Number(e.target.value))}
                                             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                                         />
-                                     </div>
+                                    </div>
                                 </div>
                             </section>
                         </motion.div>
@@ -302,14 +521,30 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     {activeTab === 'visual' && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                             <div className="flex gap-3">
-                                <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32">
-                                    <User className="w-8 h-8 text-gray-400 mb-2" />
-                                    <span className="text-sm text-gray-600 font-medium">上传图标</span>
+                                <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden">
+                                    {config.logoUrl && (
+                                        <div 
+                                            className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
+                                            style={{ backgroundImage: `url(${config.logoUrl})` }} 
+                                        />
+                                    )}
+                                    <div className="relative z-10 flex flex-col items-center">
+                                        <Box className="w-8 h-8 text-gray-400 mb-2" />
+                                        <span className="text-sm text-gray-600 font-medium">应用图标</span>
+                                    </div>
                                     <input type="file" hidden accept="image/*" onChange={(e) => handleImageUpload('logoUrl', e)} />
                                 </label>
-                                 <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32">
-                                    <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-                                    <span className="text-sm text-gray-600 font-medium">上传横幅</span>
+                                <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden">
+                                    {config.bannerUrl && (
+                                        <div 
+                                            className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
+                                            style={{ backgroundImage: `url(${config.bannerUrl})` }} 
+                                        />
+                                    )}
+                                    <div className="relative z-10 flex flex-col items-center">
+                                        <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+                                        <span className="text-sm text-gray-600 font-medium">置顶大图</span>
+                                    </div>
                                     <input type="file" hidden accept="image/*" onChange={(e) => handleImageUpload('bannerUrl', e)} />
                                 </label>
                             </div>
@@ -318,7 +553,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                                     <span className="text-sm font-bold text-gray-700">截图管理</span>
                                     <label className="cursor-pointer text-xs text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1">
-                                        + Add
+                                        <Upload className="w-4 h-4" />
+                                        上传截图
                                         <input type="file" hidden multiple accept="image/*" onChange={handleScreenshotUpload} />
                                     </label>
                                 </div>
@@ -336,8 +572,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                                 <img src={src} alt="" className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-xs font-mono text-gray-400 truncate mb-1">Asset {idx + 1}</div>
-                                                <div className="text-xs text-gray-500 truncate">{src.substring(src.lastIndexOf('/')+1, src.lastIndexOf('/')+20)}...</div>
+                                                <div className="text-xs text-gray-500 truncate">图{idx + 1}</div>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <button 
@@ -391,7 +626,16 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                             <div key={scheme.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
                                                 <div className="flex items-start justify-between">
                                                     <div>
-                                                        <h4 className="font-bold text-gray-800">{scheme.name}</h4>
+                                                        <div className="flex items-center gap-2 group/title">
+                                                            <h4 className="font-bold text-gray-800">{scheme.name}</h4>
+                                                            <button 
+                                                                onClick={() => handleRenameScheme(scheme)} 
+                                                                className="opacity-0 group-hover/title:opacity-100 text-gray-400 hover:text-blue-600 transition-opacity"
+                                                                title="重命名"
+                                                            >
+                                                                <Edit3 className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
                                                         <div className="text-xs text-gray-500 mt-1">
                                                             {new Date(scheme.savedAt).toLocaleString()} • {scheme.config.screenshots.length} Assets
                                                         </div>
@@ -427,6 +671,17 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     )}
                 </div>
             </motion.div>
+
+            {/* Custom Dialog - Rendered at the end for z-index */}
+            <CustomDialog 
+                isOpen={dialog.isOpen}
+                type={dialog.type}
+                title={dialog.title}
+                message={dialog.message}
+                defaultValue={dialog.defaultValue}
+                onConfirm={dialog.onConfirm}
+                onClose={closeDialog}
+            />
         </>
       )}
     </AnimatePresence>
