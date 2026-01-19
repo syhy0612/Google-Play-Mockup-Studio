@@ -27,22 +27,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '21'
+          java-version: '22'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      # ✨ 修改点 1：先删旧文件，再同步，确保网页是最新的
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          rm -rf android/app/src/main/assets/public/*
+          npx cap sync android
 
-      # 1. 打正式包 (Release)
+      # ✨ 修改点 2：加了 clean，确保名字和配置是最新的
       - name: Build Release APK
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew clean assembleRelease
 
-      # 2. 自动签名 (用你配置的 Secrets)
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -52,15 +54,11 @@ jobs:
           alias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "34.0.0"
 
-      # 3. 改名！把签名好的包，改名为 "Play Mockup.apk"
       - name: Rename APK
         run: |
           mv "${{ steps.sign_app.outputs.signedReleaseFile }}" "Play Mockup.apk"
 
-      # 4. 上传 (你会下载到一个叫 "Play Mockup.zip" 的包，解压后就是上面的 apk)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
