@@ -44,10 +44,6 @@ const App: React.FC = () => {
             />
         </div>
 
-         {/* Android Navigation Bar Mock */}
-         <div className="h-6 bg-white shrink-0 flex items-center justify-center pb-2 z-20">
-             <div className="w-32 h-1 bg-gray-900 rounded-full opacity-20"></div>
-         </div>
       </div>
 
       {/* Editor Drawer */}
