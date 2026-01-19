@@ -191,7 +191,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
           </div>
         </div>
         <div className="flex gap-6 overflow-x-auto no-scrollbar text-sm font-medium border-b border-gray-100 pb-2">
-            <span className="text-[#01875f] whitespace-nowrap border-b-2 border-[#01875f] pb-2">{t.forYou}</span>
+            <span className="text-[#2656C8] whitespace-nowrap border-b-2 border-[#2656C8] pb-2">{t.forYou}</span>
             <span className="text-gray-500 whitespace-nowrap pb-2">{t.topCharts}</span>
             <span className="text-gray-500 whitespace-nowrap pb-2">{t.children}</span>
             <span className="text-gray-500 whitespace-nowrap pb-2">{t.premium}</span>
@@ -230,7 +230,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
                         {config.tags?.[0] || 'App'} • <span className="flex items-center inline-flex gap-0.5">{config.rating || INITIAL_CONFIG.rating} <Star className="w-2.5 h-2.5 fill-current" /></span>
                     </div>
                 </div>
-                <button className="h-8 px-4 bg-transparent border border-gray-300 text-[#01875f] rounded-full text-xs font-medium hover:bg-gray-50 self-center">
+                <button className="h-8 px-6 bg-[#2656C8] text-white rounded-full text-xs font-medium hover:bg-[#1E44A0] self-center shadow-sm">
                     {t.install}
                 </button>
              </div>
@@ -311,7 +311,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
                  )}
              </div>
 
-             <button className="w-full mt-4 bg-transparent border border-gray-300 text-[#01875f] font-medium py-2 rounded-full text-sm hover:bg-gray-50">
+             <button className="w-full mt-4 bg-[#2656C8] text-white font-medium py-2 rounded-full text-sm hover:bg-[#1E44A0] shadow-sm">
                 {t.install}
              </button>
         </div>
@@ -371,7 +371,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
                 <h1 className="text-2xl font-medium text-gray-900 leading-tight truncate">
                     {config.appName || INITIAL_CONFIG.appName}
                 </h1>
-                <div className="text-[#01875f] font-medium text-sm truncate">
+                <div className="text-[#2656C8] font-medium text-sm truncate">
                     {config.devName || INITIAL_CONFIG.devName}
                 </div>
                  <div className="text-gray-500 text-xs truncate mt-1">
@@ -405,7 +405,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
 
       {/* Install Button */}
       <div className="px-6 pb-6">
-        <button className="w-full bg-[#01875f] hover:bg-[#017753] active:bg-[#016848] text-white font-medium rounded-full py-2.5 text-sm transition-colors shadow-sm">
+        <button className="w-full bg-[#2656C8] hover:bg-[#1E44A0] active:bg-[#163275] text-white font-medium rounded-full py-2.5 text-sm transition-colors shadow-sm">
             {strings.install}
         </button>
       </div>
@@ -506,7 +506,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
        {(currentView === 'discovery' || currentView === 'search') && (
          <div className="border-t border-gray-200 bg-white flex justify-around py-3 px-2 pb-5 z-30">
             <button 
-              className={`flex flex-col items-center gap-1 text-[#01875f] cursor-default`}
+              className={`flex flex-col items-center gap-1 text-[#2656C8] cursor-default`}
             >
                <Gamepad2 className="w-6 h-6 fill-current" />
                <span className="text-xs font-medium">{t.games}</span>
