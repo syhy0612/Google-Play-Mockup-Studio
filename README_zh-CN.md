@@ -4,6 +4,11 @@
 
 一个高保真的 Google Play 商店详情页生成器和模拟器。该工具允许开发者和设计师通过像素级完美的移动端界面，实时预览和自定义他们的应用商店展示效果。
 
+## 🚀 在线预览与下载
+
+- **网页预览**: [google-play-mockup.pages.dev](https://google-play-mockup.pages.dev/)
+- **Android APK**: [下载最新版本](https://github.com/syhy0612/Google-Play-Mockup-Studio/releases/latest)
+
 ## 功能特性
 
 *   **真实模拟**：精准复刻 Google Play 商店体验，包括发现页（首页）、搜索页和应用详情页。

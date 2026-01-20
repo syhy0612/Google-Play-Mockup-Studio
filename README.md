@@ -4,6 +4,11 @@
 
 A high-fidelity Google Play Store listing generator and simulator. This tool allows developers and designers to preview and customize their app store presence in real-time with a pixel-perfect mobile interface.
 
+## 🚀 Live Demo & Download
+
+- **Web Preview**: [google-play-mockup.pages.dev](https://google-play-mockup.pages.dev/)
+- **Android APK**: [Download Latest Release](https://github.com/syhy0612/Google-Play-Mockup-Studio/releases/latest)
+
 ## Features
 
 *   **Realistic Simulation**: Accurately mimics the Google Play Store experience, including Discovery (Home), Search, and App Details views.
