@@ -45,12 +45,14 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
     if (isDragging) return; 
     setInitialScrollIndex(index);
     setPreviewImage(null); // Clear single image mode
+    history.pushState({ ...history.state, overlay: 'lightbox' }, '');
     setLightboxOpen(true);
   };
 
   const openSinglePreview = (url: string) => {
     if (isDragging) return;
     setPreviewImage(url);
+    history.pushState({ ...history.state, overlay: 'lightbox' }, '');
     setLightboxOpen(true);
   };
 
@@ -60,6 +62,34 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
         lightboxRef.current.scrollTo({ left: width * initialScrollIndex, behavior: 'instant' });
     }
   }, [lightboxOpen, initialScrollIndex, previewImage]);
+
+  // History Management for Views
+  useEffect(() => {
+    // Force Discovery view on mount/refresh as requested
+    setCurrentView('discovery');
+    history.replaceState({ ...history.state, view: 'discovery', overlay: null }, '');
+
+    const handlePopState = (e: PopStateEvent) => {
+        const state = e.state || { view: 'discovery' };
+        
+        // Handle View
+        if (state.view) {
+             setCurrentView(state.view);
+        } else {
+             setCurrentView('discovery');
+        }
+
+        // Handle Lightbox
+        if (state.overlay === 'lightbox') {
+            setLightboxOpen(true);
+        } else {
+            setLightboxOpen(false);
+        }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Detect language for hardcoded strings
   const isZh = strings.install === '安装';
@@ -81,6 +111,13 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
     install: strings.install,
   };
 
+  useEffect(() => {
+    // If we are in discovery view, ensure we are in a state where we can navigate
+    if (currentView === 'discovery') {
+       // Optional: Preload banner logic if needed
+    }
+  }, [currentView]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollRef.current) return;
     setIsDragging(true);
@@ -92,7 +129,15 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
     setIsDragging(false);
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // Small threshold to distinguish click from drag
+    const x = e.pageX - scrollRef.current!.offsetLeft;
+    if (Math.abs(x - startX) < 5) {
+         // It was a click, allow event propagation
+    } else {
+        // It was a drag
+        e.stopPropagation(); 
+    }
     setIsDragging(false);
   };
 
@@ -106,11 +151,13 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
 
   const navigateToDetails = () => {
     setPreviousView(currentView);
+    setShowBanner(false); // Reset banner state when entering details
+    history.pushState({ ...history.state, view: 'details' }, '');
     setCurrentView('details');
   };
 
   const handleBack = () => {
-    setCurrentView(previousView);
+    history.back();
   };
 
   // Shared Lightbox Component
@@ -128,7 +175,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
              /* Single Image Mode (e.g. Banner) */
              <div 
                 className="w-full h-full flex items-center justify-center p-2"
-                onClick={() => setLightboxOpen(false)}
+                onClick={() => history.back()}
              >
                 <img 
                     src={previewImage} 
@@ -147,7 +194,7 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
                     <div 
                         key={idx} 
                         className="min-w-full h-full flex items-center justify-center snap-center p-2"
-                        onClick={() => setLightboxOpen(false)}
+                        onClick={() => history.back()}
                     >
                         <img 
                             src={src} 
@@ -168,35 +215,43 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
 
   const renderDiscoveryView = () => (
     <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }}
-      className="pb-20"
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }}
+        className="pb-20"
     >
-      {/* Header */}
-      <div className="sticky top-0 bg-white z-20 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-sm">
-        <div className="flex items-center gap-3 bg-[#f1f3f4] rounded-full px-4 py-2.5 shadow-sm mb-3">
-          <Menu className="w-5 h-5 text-gray-600" />
-          <div 
-            className="flex-1 text-gray-500 text-sm cursor-pointer" 
-            onClick={() => setCurrentView('search')}
-          >
-            {t.searchPlaceholder}
-          </div>
-          <div 
-            className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer"
-            onClick={onOpenSettings}
-          >
-            {config.devName ? config.devName.charAt(0).toUpperCase() : 'D'}
-          </div>
+        {/* Header - Sticky with safe area padding */}
+        <div className="sticky top-0 bg-white z-20 px-4 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-sm">
+            <div 
+                className="bg-white rounded-full shadow-sm border border-gray-200 h-12 flex items-center px-4 gap-3 cursor-pointer"
+                onClick={() => {
+                    history.pushState({ ...history.state, view: 'search' }, '');
+                    setCurrentView('search');
+                }}
+            >
+                <Search className="w-5 h-5 text-gray-400" />
+                <span className="text-gray-500 text-sm font-normal truncate">{t.searchPlaceholder}</span>
+                <div className="flex-1" />
+                <Mic className="w-5 h-5 text-gray-500" />
+                <div 
+                    className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:opacity-90 relative z-10"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenSettings();
+                    }}
+                >
+                    {(config.devName || INITIAL_CONFIG.devName || 'D')[0].toUpperCase()}
+                </div>
+            </div>
+            
+            {/* Tabs */}
+            <div className="flex gap-6 mt-4 overflow-x-auto no-scrollbar pb-1">
+                <span className="text-[#2656C8] font-medium whitespace-nowrap border-b-2 border-[#2656C8] pb-1">{t.forYou}</span>
+                <span className="text-gray-500 whitespace-nowrap">{t.topCharts}</span>
+                <span className="text-gray-500 whitespace-nowrap">{t.children}</span>
+                <span className="text-gray-500 whitespace-nowrap">{t.premium}</span>
+            </div>
         </div>
-        <div className="flex gap-6 overflow-x-auto no-scrollbar text-sm font-medium border-b border-gray-100 pb-2">
-            <span className="text-[#2656C8] whitespace-nowrap border-b-2 border-[#2656C8] pb-2">{t.forYou}</span>
-            <span className="text-gray-500 whitespace-nowrap pb-2">{t.topCharts}</span>
-            <span className="text-gray-500 whitespace-nowrap pb-2">{t.children}</span>
-            <span className="text-gray-500 whitespace-nowrap pb-2">{t.premium}</span>
-        </div>
-      </div>
 
       {/* Recommended Section */}
       <div className="px-5 mt-4">
@@ -264,14 +319,14 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
     >
         {/* Search Header */}
         <div className="sticky top-0 bg-white z-20 px-2 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] flex items-center gap-2 shadow-sm border-b border-gray-100">
-            <button onClick={() => setCurrentView('discovery')} className="p-2 text-gray-500">
+            <button onClick={() => history.back()} className="p-2 text-gray-500">
                 <ArrowLeft className="w-6 h-6" />
             </button>
             <div className="flex-1 bg-[#f1f3f4] h-10 rounded-full flex items-center px-4 gap-2">
+                <Search className="w-5 h-5 text-gray-500" />
                 <span className="flex-1 text-gray-900 text-sm">{config.appName || INITIAL_CONFIG.appName}</span>
-                {/* Search icon removed per user request */}
             </div>
-            <button className="p-2 text-gray-500">
+            <button className="p-2 text-gray-500" onClick={onOpenSettings}>
                 <Mic className="w-5 h-5" />
             </button>
         </div>
@@ -298,10 +353,14 @@ export const AppContent: React.FC<AppContentProps> = ({ config, strings, gallery
              </div>
 
              {/* Inline Screenshots */}
-             <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar pb-2">
+             <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar pb-2 items-center">
                  {config.screenshots.map((src, idx) => (
-                     <div key={idx} className="w-[100px] aspect-[9/16] bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 cursor-pointer" onClick={() => openLightbox(idx)}>
-                         <img src={src} className="w-full h-full object-cover" alt="" />
+                     <div 
+                        key={idx} 
+                        className="h-[180px] w-auto bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 cursor-pointer" 
+                        onClick={() => openLightbox(idx)}
+                     >
+                         <img src={src} className="h-full w-auto object-contain" alt="" />
                      </div>
                  ))}
                  {config.screenshots.length === 0 && (

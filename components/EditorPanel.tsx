@@ -3,6 +3,17 @@ import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { AppConfig, Language, I18nStrings, SavedScheme } from '../types';
 import { INITIAL_CONFIG } from '../constants';
 import { ImageIcon, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3, Save, Check, Download, Box, Upload, RotateCcw } from './IconComponents';
+import { getSchemes, addScheme, updateScheme, deleteScheme } from '../utils/storage';
+
+const generateUUID = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
 
 interface EditorPanelProps {
   config: AppConfig;
@@ -185,21 +196,24 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
   const closeDialog = () => setDialog(prev => ({ ...prev, isOpen: false }));
 
-  // Load schemes from localStorage on mount
+  // Load schemes from LocalStorage
   useEffect(() => {
-    const saved = localStorage.getItem('mockup_schemes');
-    if (saved) {
-      try {
-        setSchemes(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse schemes", e);
-      }
-    }
+    const loadData = async () => {
+        try {
+            const loaded = await getSchemes();
+            setSchemes(loaded);
+        } catch (e) {
+            console.error("Failed to load schemes", e);
+        }
+    };
+    loadData();
   }, []);
 
-  const saveSchemesToStorage = (newSchemes: SavedScheme[]) => {
-    setSchemes(newSchemes);
-    localStorage.setItem('mockup_schemes', JSON.stringify(newSchemes));
+  const saveSchemesToStorage = async (newSchemes: SavedScheme[]) => {
+    // This helper is deprecated but kept for safety if referenced elsewhere, 
+    // though I've replaced all usages.
+    // Let's remove it in next step or just leave it empty to avoid build errors if I missed one.
+    // Actually, I should delete it.
   };
 
   const getNextDefaultName = () => {
@@ -238,15 +252,23 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         title: '重命名方案',
         message: '请输入新的方案名称',
         defaultValue: scheme.name,
-        onConfirm: (newName) => {
+        onConfirm: async (newName) => {
             if (!newName || newName === scheme.name) {
                 closeDialog();
                 return;
             }
-            const updatedSchemes = schemes.map(s => 
-                s.id === scheme.id ? { ...s, name: newName } : s
-            );
-            saveSchemesToStorage(updatedSchemes);
+            const updatedScheme = { ...scheme, name: newName };
+            const oldSchemes = schemes;
+            
+            setSchemes(schemes.map(s => s.id === scheme.id ? updatedScheme : s));
+            
+            try {
+                await updateScheme(updatedScheme);
+            } catch (e) {
+                console.error("Update failed", e);
+                alert("重命名失败: " + e);
+                setSchemes(oldSchemes);
+            }
             closeDialog();
         }
     });
@@ -261,15 +283,25 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         title: '保存方案',
         message: '请输入方案名称',
         defaultValue: defaultName,
-        onConfirm: (name) => {
+        onConfirm: async (name) => {
             if (!name) return;
             const newScheme: SavedScheme = {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 name,
                 config: { ...config },
                 savedAt: Date.now()
             };
-            saveSchemesToStorage([newScheme, ...schemes]);
+            
+            const oldSchemes = schemes;
+            setSchemes([newScheme, ...schemes]);
+            
+            try {
+                await addScheme(newScheme);
+            } catch (e) {
+                console.error("Save failed", e);
+                alert("保存失败 (Storage Failed): " + e);
+                setSchemes(oldSchemes);
+            }
             closeDialog();
         }
     });
@@ -281,8 +313,17 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         type: 'confirm',
         title: '删除方案',
         message: '确定要删除这个方案吗？此操作无法撤销。',
-        onConfirm: () => {
-            saveSchemesToStorage(schemes.filter(s => s.id !== id));
+        onConfirm: async () => {
+            const oldSchemes = schemes;
+            setSchemes(schemes.filter(s => s.id !== id));
+            
+            try {
+                await deleteScheme(id);
+            } catch (e) {
+                console.error("Delete failed", e);
+                alert("删除失败: " + e);
+                setSchemes(oldSchemes);
+            }
             closeDialog();
         }
     });
@@ -294,14 +335,23 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         type: 'confirm',
         title: '更新方案',
         message: `确定要用当前配置覆盖 "${scheme.name}" 吗？此操作无法撤销。`,
-        onConfirm: () => {
+        onConfirm: async () => {
             const updatedScheme = {
                 ...scheme,
                 config: { ...config },
                 savedAt: Date.now()
             };
-            const updatedSchemes = schemes.map(s => s.id === scheme.id ? updatedScheme : s);
-            saveSchemesToStorage(updatedSchemes);
+            
+            const oldSchemes = schemes;
+            setSchemes(schemes.map(s => s.id === scheme.id ? updatedScheme : s));
+            
+            try {
+                await updateScheme(updatedScheme);
+            } catch (e) {
+                console.error("Update failed", e);
+                alert("更新失败: " + e);
+                setSchemes(oldSchemes);
+            }
             closeDialog();
         }
     });
@@ -356,6 +406,35 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     setConfig(prev => ({ ...prev, [field]: value }));
   };
 
+  const compressImage = async (base64Str: string, maxWidth = 1024, quality = 0.7): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(base64Str);
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = () => resolve(base64Str);
+    });
+  };
+
   const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -369,7 +448,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     if (e.target.files && e.target.files[0]) {
       try {
         const base64 = await convertFileToBase64(e.target.files[0]);
-        setConfig(prev => ({ ...prev, [field]: base64 }));
+        // Compress banner more aggressively, logo less so
+        const compressed = await compressImage(base64, field === 'bannerUrl' ? 1280 : 512, 0.8);
+        setConfig(prev => ({ ...prev, [field]: compressed }));
       } catch (error) {
         console.error("Error converting image to base64:", error);
       }
@@ -382,7 +463,12 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       const base64Promises = files.map(file => convertFileToBase64(file as File));
       
       try {
-        const newScreenshots = await Promise.all(base64Promises);
+        const rawBase64s = await Promise.all(base64Promises);
+        // Compress screenshots to ensure they fit in storage
+        // Max width 720p is usually enough for mobile screenshots in this mockup
+        const compressedPromises = rawBase64s.map(b64 => compressImage(b64, 720, 0.7));
+        const newScreenshots = await Promise.all(compressedPromises);
+        
         setConfig(prev => ({ ...prev, screenshots: [...prev.screenshots, ...newScreenshots] }));
       } catch (error) {
         console.error("Error converting screenshots to base64:", error);

@@ -80,12 +80,20 @@ npm run build
     *   **Banner**: On the Details page, click the App Icon next to the title to show/hide the large Feature Graphic at the top.
     *   **Language**: Toggle between English and Chinese in the Global Settings section of the Editor Panel.
 
-## Recent Updates
+## Recent Updates (v1.1)
 
-*   **UI Polish**: Unified accent color to Blue (#2656C8) and fixed install button styles.
+*   **Navigation Logic**:
+    *   **Fixed Back Button**: Search page back button now correctly follows navigation history (returning to Discovery or previous view).
+    *   **Default View**: App now strictly launches in Discovery view with Banner enabled by default.
+    *   **Details Banner**: Feature Graphic in Details view is now **hidden by default** (click App Icon to toggle).
+*   **Preview Improvements**:
+    *   **Adaptive Screenshots**: Search page screenshots now respect aspect ratio (no longer cropped).
+    *   **Lightbox Flow**: Closing a lightbox image now correctly triggers a history back action.
+*   **Performance & Storage**:
+    *   **Optimized Saving**: Reverted to LocalStorage with incremental saving logic (only saves changed data) to fix "QuotaExceededError" while maintaining performance.
+    *   **Avatar Interaction**: Discovery page avatar now correctly opens settings without triggering search navigation.
+*   **UI Polish**: Unified accent color to Blue (#2656C8), fixed install button styles, and removed bottom home indicator.
 *   **Notch Support**: Added `viewport-fit=cover` and dynamic padding to support status bars on bezel-less devices.
-*   **Clean Layout**: Removed the bottom "Home Indicator" bar for a cleaner full-screen experience.
-*   **Performance**: Optimized rendering with React functional components and Framer Motion.
 
 ## License
 

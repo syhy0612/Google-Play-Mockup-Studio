@@ -28,6 +28,35 @@ const App: React.FC = () => {
 
   const strings = DICTIONARY[lang];
 
+  // History Management for Settings Overlay
+  React.useEffect(() => {
+    // Initialize history state if null
+    if (!history.state) {
+      history.replaceState({ view: 'discovery', overlay: null }, '');
+    }
+
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state || {};
+      if (state.overlay === 'settings') {
+        setIsEditorOpen(true);
+      } else {
+        setIsEditorOpen(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleOpenSettings = () => {
+    history.pushState({ ...history.state, overlay: 'settings' }, '');
+    setIsEditorOpen(true);
+  };
+
+  const handleCloseSettings = () => {
+    history.back();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center font-sans overflow-hidden">
       
@@ -40,7 +69,7 @@ const App: React.FC = () => {
               config={config} 
               strings={strings} 
               galleryHeight={galleryHeight} 
-              onOpenSettings={() => setIsEditorOpen(true)}
+              onOpenSettings={handleOpenSettings}
             />
         </div>
 
@@ -54,7 +83,7 @@ const App: React.FC = () => {
         setLang={setLang}
         strings={strings}
         isOpen={isEditorOpen}
-        onClose={() => setIsEditorOpen(false)}
+        onClose={handleCloseSettings}
         galleryHeight={galleryHeight}
         setGalleryHeight={setGalleryHeight}
       />
