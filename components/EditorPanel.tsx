@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { AppConfig, Language, I18nStrings, SavedScheme } from '../types';
 import { INITIAL_CONFIG } from '../constants';
-import { ImageIcon, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3, Save, Check, Download, Box, Upload } from './IconComponents';
+import { ImageIcon, User, Database, X, ArrowUp, ArrowDown, Trash2, Settings, Edit3, Save, Check, Download, Box, Upload, RotateCcw } from './IconComponents';
 
 interface EditorPanelProps {
   config: AppConfig;
@@ -288,6 +288,57 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     });
   };
 
+  const handleUpdateScheme = (scheme: SavedScheme) => {
+    setDialog({
+        isOpen: true,
+        type: 'confirm',
+        title: '更新方案',
+        message: `确定要用当前配置覆盖 "${scheme.name}" 吗？此操作无法撤销。`,
+        onConfirm: () => {
+            const updatedScheme = {
+                ...scheme,
+                config: { ...config },
+                savedAt: Date.now()
+            };
+            const updatedSchemes = schemes.map(s => s.id === scheme.id ? updatedScheme : s);
+            saveSchemesToStorage(updatedSchemes);
+            closeDialog();
+        }
+    });
+  };
+
+  const handleResetSection = (section: 'info' | 'store' | 'global') => {
+      setDialog({
+        isOpen: true,
+        type: 'confirm',
+        title: '重置设置',
+        message: '确定要重置该部分的设置吗？',
+        onConfirm: () => {
+            if (section === 'info') {
+                setConfig(prev => ({
+                    ...prev,
+                    appName: INITIAL_CONFIG.appName,
+                    devName: INITIAL_CONFIG.devName,
+                    description: INITIAL_CONFIG.description,
+                    tags: INITIAL_CONFIG.tags
+                }));
+            } else if (section === 'store') {
+                setConfig(prev => ({
+                    ...prev,
+                    rating: INITIAL_CONFIG.rating,
+                    downloads: INITIAL_CONFIG.downloads,
+                    size: INITIAL_CONFIG.size,
+                    ratedFor: INITIAL_CONFIG.ratedFor
+                }));
+            } else if (section === 'global') {
+                setLang('en');
+                setGalleryHeight(160);
+            }
+            closeDialog();
+        }
+      });
+  };
+
   const handleLoadScheme = (scheme: SavedScheme) => {
     setDialog({
         isOpen: true,
@@ -305,17 +356,37 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     setConfig(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (field: 'logoUrl' | 'bannerUrl', e: React.ChangeEvent<HTMLInputElement>) => {
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleImageUpload = async (field: 'logoUrl' | 'bannerUrl', e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      setConfig(prev => ({ ...prev, [field]: url }));
+      try {
+        const base64 = await convertFileToBase64(e.target.files[0]);
+        setConfig(prev => ({ ...prev, [field]: base64 }));
+      } catch (error) {
+        console.error("Error converting image to base64:", error);
+      }
     }
   };
 
-  const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newScreenshots = Array.from(e.target.files).map((file: File) => URL.createObjectURL(file));
-      setConfig(prev => ({ ...prev, screenshots: [...prev.screenshots, ...newScreenshots] }));
+      const files = Array.from(e.target.files);
+      const base64Promises = files.map(file => convertFileToBase64(file as File));
+      
+      try {
+        const newScreenshots = await Promise.all(base64Promises);
+        setConfig(prev => ({ ...prev, screenshots: [...prev.screenshots, ...newScreenshots] }));
+      } catch (error) {
+        console.error("Error converting screenshots to base64:", error);
+      }
     }
   };
 
@@ -337,8 +408,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
   // Tag Management Logic
   const addTag = () => {
-    if (tagInput.trim()) {
-        setConfig(prev => ({...prev, tags: [...prev.tags, tagInput.trim()]}));
+    const newTag = tagInput.trim();
+    if (newTag && !config.tags.includes(newTag)) {
+        setConfig(prev => ({...prev, tags: [...prev.tags, newTag]}));
         setTagInput("");
     }
   };
@@ -407,7 +479,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                     {activeTab === 'info' && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
                             <section>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">基本信息</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
+                                    基本信息
+                                    <button onClick={() => handleResetSection('info')} className="text-gray-400 hover:text-gray-600 p-1" title="重置"><RotateCcw className="w-4 h-4" /></button>
+                                </h3>
                                 <div className="space-y-3">
                                     <InputGroup 
                                         label="应用名称"
@@ -446,16 +521,27 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                             </div>
                                             <button onClick={addTag} className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">Add</button>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {config.tags.map((tag, i) => (
-                                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                                    {tag}
-                                                    <button onClick={() => removeTag(tag)} className="ml-1.5 hover:text-blue-900 focus:outline-none">
-                                                        <X className="w-3 h-3" />
-                                                    </button>
-                                                </span>
+                                        <Reorder.Group 
+                                            axis="x" 
+                                            values={config.tags} 
+                                            onReorder={(newTags) => setConfig(prev => ({ ...prev, tags: newTags }))} 
+                                            className="flex flex-wrap gap-2 list-none"
+                                        >
+                                            {config.tags.map((tag) => (
+                                                <Reorder.Item key={tag} value={tag} className="cursor-move">
+                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 select-none">
+                                                        {tag}
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); removeTag(tag); }} 
+                                                            onPointerDown={(e) => e.stopPropagation()}
+                                                            className="ml-1.5 hover:text-blue-900 focus:outline-none cursor-pointer"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </span>
+                                                </Reorder.Item>
                                             ))}
-                                        </div>
+                                        </Reorder.Group>
                                     </div>
 
                                     <TextAreaGroup 
@@ -468,7 +554,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             </section>
 
                             <section>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">商店数据</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
+                                    商店数据
+                                    <button onClick={() => handleResetSection('store')} className="text-gray-400 hover:text-gray-600 p-1" title="重置"><RotateCcw className="w-4 h-4" /></button>
+                                </h3>
                                 <div className="grid grid-cols-2 gap-3">
                                      <InputGroup label="评分" value={config.rating} onChange={(val) => handleInputChange('rating', val)} placeholder={INITIAL_CONFIG.rating} />
                                      <InputGroup label="下载量" value={config.downloads} onChange={(val) => handleInputChange('downloads', val)} placeholder={INITIAL_CONFIG.downloads} />
@@ -478,7 +567,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                             </section>
 
                             <section>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">全局设置</h3>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
+                                    全局设置
+                                    <button onClick={() => handleResetSection('global')} className="text-gray-400 hover:text-gray-600 p-1" title="重置"><RotateCcw className="w-4 h-4" /></button>
+                                </h3>
                                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-4">
                                      <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium text-gray-600">预览语言</span>
@@ -637,7 +729,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                                             </button>
                                                         </div>
                                                         <div className="text-xs text-gray-500 mt-1">
-                                                            {new Date(scheme.savedAt).toLocaleString()} • {scheme.config.screenshots.length} Assets
+                                                            {new Date(scheme.savedAt).toLocaleString()} • 应用截图*{scheme.config.screenshots.length}
                                                         </div>
                                                     </div>
                                                     <button 
@@ -655,12 +747,21 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                                                         ))}
                                                     </div>
                                                     <div className="flex-1"></div>
-                                                    <button 
-                                                        onClick={() => handleLoadScheme(scheme)}
-                                                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 flex items-center gap-1 transition-colors"
-                                                    >
-                                                        <Download className="w-3 h-3" /> 加载
-                                                    </button>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={() => handleUpdateScheme(scheme)}
+                                                            className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 flex items-center gap-1 transition-colors"
+                                                            title="保存当前配置覆盖此方案"
+                                                        >
+                                                            <Save className="w-3 h-3" /> 保存
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleLoadScheme(scheme)}
+                                                            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 flex items-center gap-1 transition-colors"
+                                                        >
+                                                            <Download className="w-3 h-3" /> 加载
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}

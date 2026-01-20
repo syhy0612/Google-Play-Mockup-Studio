@@ -5,7 +5,7 @@ export const INITIAL_CONFIG: AppConfig = {
   devName: "Telegram@MayGoogle",
   description: "It simulates the Google Play app store experience and supports native swiping and image editing.",
   rating: "4.7",
-  downloads: "1B+",
+  downloads: "500M+",
   reviews: "12M",
   size: "45 MB",
   ratedFor: "3+",

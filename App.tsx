@@ -15,14 +15,14 @@ const img4 = '/assets/4.png';
 const img5 = '/assets/5.png';
 
 const App: React.FC = () => {
-  // v2.3: Initialize state with Local Assets
-  const [config, setConfig] = useState<AppConfig>({
-    ...INITIAL_CONFIG,
-    logoUrl: localLogo,
-    screenshots: [img1, img2, img3, img4, img5]
-  });
-  
-  const [lang, setLang] = useState<Language>('en'); 
+    // v2.3: Initialize state with Local Assets
+    const [config, setConfig] = useState<AppConfig>({
+      ...INITIAL_CONFIG,
+      logoUrl: localLogo,
+      screenshots: [img1, img2, img3, img4, img5]
+    });
+    
+    const [lang, setLang] = useState<Language>('en'); 
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [galleryHeight, setGalleryHeight] = useState(160); // v2.1: Default Height 160px
 

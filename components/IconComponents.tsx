@@ -30,7 +30,8 @@ import {
   Gamepad2,
   Mic,
   LayoutGrid,
-  BookOpen
+  BookOpen,
+  RotateCcw
 } from 'lucide-react';
 
 export const StarRating = ({ rating }: { rating: string }) => (
@@ -71,5 +72,6 @@ export {
   Gamepad2,
   Mic,
   LayoutGrid,
-  BookOpen
+  BookOpen,
+  RotateCcw
 };
