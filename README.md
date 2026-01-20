@@ -1,105 +1,105 @@
 # Google Play Mockup Studio
 
-**English** | [简体中文](./README_zh-CN.md)
+**简体中文** | [English](./README_EN.md)
 
-A high-fidelity Google Play Store listing generator and simulator. This tool allows developers and designers to preview and customize their app store presence in real-time with a pixel-perfect mobile interface.
+一个高保真的 Google Play 商店详情页生成器和模拟器。该工具允许开发者和设计师通过像素级完美的移动端界面，实时预览和自定义他们的应用商店展示效果。
 
-## 🚀 Live Demo & Download
+## 🚀 在线预览与下载
 
-- **Web Preview**: [google-play-mockup.pages.dev](https://google-play-mockup.pages.dev/)
-- **Android APK**: [Download Latest Release](https://github.com/syhy0612/Google-Play-Mockup-Studio/releases/latest)
+- **网页预览**: [google-play-mockup.pages.dev](https://google-play-mockup.pages.dev/)
+- **Android APK**: [下载最新版本](https://github.com/syhy0612/Google-Play-Mockup-Studio/releases/latest)
 
-## Features
+## 功能特性
 
-*   **Realistic Simulation**: Accurately mimics the Google Play Store experience, including Discovery (Home), Search, and App Details views.
-*   **Real-time Editor**:
-    *   **Customize Metadata**: Edit App Name, Developer Name, Description, Ratings, Downloads, and more.
-    *   **Asset Management**: Upload and manage App Icon, Feature Banner, and Screenshots.
-    *   **Visual Control**: Adjust screenshot gallery height and preview settings.
-*   **Interactive Preview**:
-    *   **Lightbox Gallery**: Click screenshots to view them in a full-screen lightbox with swipe support.
-    *   **Banner Toggle**: Click the App Icon in the Details view to toggle the Feature Graphic banner.
-    *   **Navigation**: Functional Back, Search, and Tab navigation simulation.
-*   **Mobile-First & Responsive**:
-    *   **Notch/Safe-area Support**: Fully adapted for devices with notches/cutouts (e.g., modern iPhones, Androids) using `safe-area-inset`.
-    *   **Touch Interactions**: Drag-to-scroll galleries and smooth transitions using Framer Motion.
-*   **Localization**: Built-in support for English (EN) and Chinese (ZH) interface languages.
-*   **Blue Theme**: Updated to the latest Play Store visual style with #2656C8 accent color.
+*   **真实模拟**：精准复刻 Google Play 商店体验，包括发现页（首页）、搜索页和应用详情页。
+*   **实时编辑器**：
+    *   **自定义元数据**：编辑应用名称、开发者名称、描述、评分、下载量等信息。
+    *   **资源管理**：上传和管理应用图标、置顶大图（Feature Banner）和屏幕截图。
+    *   **视觉控制**：调整截图库高度和预览设置。
+*   **交互式预览**：
+    *   **灯箱画廊**：点击截图可在全屏灯箱中查看，支持滑动切换。
+    *   **Banner 切换**：在详情页点击应用图标，可切换显示/隐藏顶部的 Feature Graphic 大图。
+    *   **导航模拟**：功能完善的返回、搜索和标签栏导航模拟。
+*   **移动端优先 & 响应式**：
+    *   **刘海屏/安全区域支持**：使用 `safe-area-inset` 完美适配带刘海/挖孔的设备（如现代 iPhone 和 Android 手机）。
+    *   **触摸交互**：使用 Framer Motion 实现拖拽滚动画廊和流畅的转场动画。
+*   **本地化**：内置英语 (EN) 和中文 (ZH) 界面语言支持。
+*   **蓝色主题**：更新至最新的 Play 商店视觉风格，统一使用 #2656C8 强调色。
 
-## Tech Stack
+## 技术栈
 
-*   **Frontend**: React 19, TypeScript
-*   **Build Tool**: Vite
-*   **Styling**: Tailwind CSS (v3)
-*   **Animations**: Framer Motion
-*   **Mobile Wrapper**: Capacitor (Android support)
-*   **Icons**: Lucide React
+*   **前端**: React 19, TypeScript
+*   **构建工具**: Vite
+*   **样式**: Tailwind CSS (v3)
+*   **动画**: Framer Motion
+*   **移动端封装**: Capacitor (支持 Android)
+*   **图标**: Lucide React
 
-## Getting Started
+## 快速开始
 
-### Prerequisites
+### 前置要求
 
-*   Node.js (v18 or higher recommended)
-*   npm or yarn
+*   Node.js (建议 v18 或更高版本)
+*   npm 或 yarn
 
-### Installation
+### 安装
 
-1.  Clone the repository:
+1.  克隆仓库：
     ```bash
     git clone https://github.com/yourusername/google-play-mockup-studio.git
     cd google-play-mockup-studio
     ```
 
-2.  Install dependencies:
+2.  安装依赖：
     ```bash
     npm install
     ```
 
-### Development
+### 开发
 
-Start the development server:
+启动开发服务器：
 
 ```bash
 npm run dev
 ```
 
-Open your browser to the local URL provided (usually `http://localhost:5173`).
+在浏览器中打开提供的本地链接（通常是 `http://localhost:5173`）。
 
-### Building
+### 构建
 
-Build the project for production:
+构建生产版本：
 
 ```bash
 npm run build
 ```
 
-## Usage Guide
+## 使用指南
 
-1.  **Open Settings**: Click the **purple 'D' avatar** in the top-right corner of the Discovery page (or the settings icon in other views) to open the **Editor Panel**.
-2.  **Edit Content**:
-    *   **Info Tab**: Change text fields like App Name, Description, Tags, etc.
-    *   **Visual Tab**: Update App Icon, Feature Graphic, and Screenshots.
-    *   **Schemes Tab**: Save and load different app configurations.
-3.  **Preview Interactions**:
-    *   **Screenshots**: Click any screenshot in the preview to open the full-screen viewer.
-    *   **Banner**: On the Details page, click the App Icon next to the title to show/hide the large Feature Graphic at the top.
-    *   **Language**: Toggle between English and Chinese in the Global Settings section of the Editor Panel.
+1.  **打开设置**：点击发现页右上角的 **紫色 'D' 头像**（或其他视图中的设置图标）打开 **编辑器面板**。
+2.  **编辑内容**：
+    *   **信息标签页**：修改应用名称、描述、标签等文本字段。
+    *   **视觉标签页**：更新应用图标、置顶大图和截图。
+    *   **方案标签页**：保存和加载不同的应用配置方案。
+3.  **预览交互**：
+    *   **截图**：在预览中点击任意截图可打开全屏查看器。
+    *   **Banner**：在详情页，点击标题旁边的应用图标，可显示/隐藏顶部的大图。
+    *   **语言**：在编辑器面板的全局设置部分切换中英文。
 
-## Recent Updates (v1.1)
+## 最近更新 (v1.1)
 
-*   **Navigation Logic**:
-    *   **Fixed Back Button**: Search page back button now correctly follows navigation history (returning to Discovery or previous view).
-    *   **Default View**: App now strictly launches in Discovery view with Banner enabled by default.
-    *   **Details Banner**: Feature Graphic in Details view is now **hidden by default** (click App Icon to toggle).
-*   **Preview Improvements**:
-    *   **Adaptive Screenshots**: Search page screenshots now respect aspect ratio (no longer cropped).
-    *   **Lightbox Flow**: Closing a lightbox image now correctly triggers a history back action.
-*   **Performance & Storage**:
-    *   **Optimized Saving**: Reverted to LocalStorage with incremental saving logic (only saves changed data) to fix "QuotaExceededError" while maintaining performance.
-    *   **Avatar Interaction**: Discovery page avatar now correctly opens settings without triggering search navigation.
-*   **UI Polish**: Unified accent color to Blue (#2656C8), fixed install button styles, and removed bottom home indicator.
-*   **Notch Support**: Added `viewport-fit=cover` and dynamic padding to support status bars on bezel-less devices.
+*   **导航逻辑优化**：
+    *   **修复返回键**：搜索页面的返回按钮现在严格遵循浏览历史（返回发现页或上一级）。
+    *   **默认视图**：应用启动时强制默认进入发现页（Discovery），并自动展开置顶大图。
+    *   **详情页 Banner**：详情页顶部的 Feature Graphic 现在**默认隐藏**（点击应用图标可展开）。
+*   **预览体验改进**：
+    *   **截图自适应**：搜索页截图预览不再强制裁剪，支持横竖屏比例自适应。
+    *   **灯箱流程**：关闭图片预览（Lightbox）现在会正确触发历史返回操作，逻辑更自然。
+*   **性能与存储**：
+    *   **存储优化**：回归 LocalStorage 并实现**增量保存**逻辑（仅保存变动数据），解决容量限制问题同时保证流畅度。
+    *   **交互修复**：修复发现页头像点击事件，现在可以正确打开设置而不误触搜索栏。
+*   **UI 优化**：将强调色统一为蓝色 (#2656C8)，修复安装按钮样式，并移除了底部 Home Indicator。
+*   **刘海屏支持**：添加了 `viewport-fit=cover` 和动态内边距，以支持全面屏设备的状态栏。
 
-## License
+## 许可证
 
 MIT
