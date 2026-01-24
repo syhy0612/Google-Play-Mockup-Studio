@@ -9,7 +9,14 @@ A high-fidelity Google Play Store listing generator and simulator. This tool all
 - **Web Preview**: [google-play-mockup.pages.dev](https://google-play-mockup.pages.dev/)
 - **Android APK**: [Download Latest Release](https://github.com/syhy0612/Google-Play-Mockup-Studio/releases/latest)
 
-## Features
+## 📅 Changelog (v1.2)
+
+- **Back Button Support**: Fixed Android physical back button to support hierarchical navigation (back for Search/Details, exit for Discovery).
+- **Default Assets**: Feature banner now uses local assets and is hidden by default (click icon to view); fixed image preview interactions.
+- **UI Polishing**: Standardized install buttons (blue bg/white text); fixed avatar click issue on Discovery page; improved Search page mic icon.
+- **Performance**: Optimized local storage logic to prevent lag.
+
+## ✨ Features
 
 *   **Realistic Simulation**: Accurately mimics the Google Play Store experience, including Discovery (Home), Search, and App Details views.
 *   **Real-time Editor**:
