@@ -193,7 +193,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
               <button
                 onClick={() => setLang('en')}
                 className={`px-3 py-1.5 text-xs font-bold transition-colors ${
-                  lang === 'en' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'
+                  lang === 'en' ? 'bg-brand text-white' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 EN
@@ -201,7 +201,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
               <button
                 onClick={() => setLang('zh')}
                 className={`px-3 py-1.5 text-xs font-bold transition-colors ${
-                  lang === 'zh' ? 'bg-[#2656C8] text-white' : 'text-gray-600 hover:bg-gray-50'
+                  lang === 'zh' ? 'bg-brand text-white' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 中文

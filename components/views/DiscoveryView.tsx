@@ -52,7 +52,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
         </div>
 
         <div className="flex gap-6 mt-4 overflow-x-auto no-scrollbar pb-1">
-          <span className="text-[#2656C8] font-medium whitespace-nowrap border-b-2 border-[#2656C8] pb-1">
+          <span className="text-brand font-medium whitespace-nowrap border-b-2 border-brand pb-1">
             {t.forYou}
           </span>
           <span className="text-gray-500 whitespace-nowrap">{t.topCharts}</span>
@@ -97,7 +97,7 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
                 </span>
               </div>
             </div>
-            <button className="h-8 px-6 bg-[#2656C8] text-white rounded-full text-xs font-medium hover:bg-[#1E44A0] self-center shadow-sm">
+            <button className="h-8 px-6 bg-brand text-white rounded-full text-xs font-medium hover:bg-brand-hover self-center shadow-sm">
               {installLabel}
             </button>
           </div>

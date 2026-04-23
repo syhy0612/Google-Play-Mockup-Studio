@@ -74,7 +74,7 @@ export const DetailsView: React.FC<DetailsViewProps> = ({
             <h1 className="text-2xl font-medium text-gray-900 leading-tight truncate">
               {config.appName || INITIAL_CONFIG.appName}
             </h1>
-            <div className="text-[#2656C8] font-medium text-sm truncate">
+            <div className="text-brand font-medium text-sm truncate">
               {config.devName || INITIAL_CONFIG.devName}
             </div>
             <div className="text-gray-500 text-xs truncate mt-1">
@@ -111,7 +111,7 @@ export const DetailsView: React.FC<DetailsViewProps> = ({
       </div>
 
       <div className="px-6 pb-6">
-        <button className="w-full bg-[#2656C8] hover:bg-[#1E44A0] active:bg-[#163275] text-white font-medium rounded-full py-2.5 text-sm transition-colors shadow-sm">
+        <button className="w-full bg-brand hover:bg-brand-hover active:bg-brand-active text-white font-medium rounded-full py-2.5 text-sm transition-colors shadow-sm">
           {strings.install}
         </button>
       </div>
@@ -132,7 +132,7 @@ export const DetailsView: React.FC<DetailsViewProps> = ({
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.1 }}
-                  key={`${src}-${idx}`}
+                  key={src}
                   src={src}
                   alt={`Screenshot ${idx}`}
                   draggable={false}

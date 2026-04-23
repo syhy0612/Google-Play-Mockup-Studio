@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 
 interface LightboxProps {
   open: boolean;
@@ -18,6 +19,8 @@ export const Lightbox: React.FC<LightboxProps> = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
+  useEscapeKey(open, onClose);
+
   useEffect(() => {
     if (open && ref.current && !singleImage) {
       const width = ref.current.offsetWidth;
@@ -29,6 +32,9 @@ export const Lightbox: React.FC<LightboxProps> = ({
     <AnimatePresence>
       {open && (
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image viewer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -54,13 +60,13 @@ export const Lightbox: React.FC<LightboxProps> = ({
             >
               {screenshots.map((src, idx) => (
                 <div
-                  key={idx}
+                  key={src}
                   className="min-w-full h-full flex items-center justify-center snap-center p-2"
                   onClick={onClose}
                 >
                   <img
                     src={src}
-                    alt={`Fullscreen ${idx}`}
+                    alt={`Fullscreen ${idx + 1}`}
                     className="max-h-full max-w-full object-contain shadow-2xl select-none"
                     draggable={false}
                   />

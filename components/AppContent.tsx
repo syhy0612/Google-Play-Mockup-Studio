@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { AppConfig, I18nStrings, Language } from '../types';
 import { Lightbox } from './Lightbox';
 import { BottomNav } from './BottomNav';
 import { DiscoveryView } from './views/DiscoveryView';
 import { SearchView } from './views/SearchView';
 import { DetailsView } from './views/DetailsView';
-
-type ViewState = 'discovery' | 'search' | 'details';
+import { useHistoryState, ViewState } from '../hooks/useHistoryState';
 
 interface AppContentProps {
   config: AppConfig;
@@ -23,39 +22,17 @@ export const AppContent: React.FC<AppContentProps> = ({
   galleryHeight,
   onOpenSettings,
 }) => {
-  const [currentView, setCurrentView] = useState<ViewState>('discovery');
-
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const { state, push, back } = useHistoryState();
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setCurrentView('discovery');
-    history.replaceState({ ...history.state, view: 'discovery', overlay: null }, '');
-
-    const handlePopState = (e: PopStateEvent) => {
-      const state = e.state || { view: 'discovery' };
-      setCurrentView(state.view ?? 'discovery');
-      setLightboxOpen(state.overlay === 'lightbox');
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  const lightboxOpen = state.overlay === 'lightbox';
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
-    setPreviewImage(null);
-    history.pushState({ ...history.state, overlay: 'lightbox' }, '');
-    setLightboxOpen(true);
+    push({ overlay: 'lightbox' });
   };
 
-  const navigateTo = (view: ViewState) => {
-    history.pushState({ ...history.state, view }, '');
-    setCurrentView(view);
-  };
-
-  const back = () => history.back();
+  const navigateTo = (view: ViewState) => push({ view });
 
   return (
     <div className="bg-white h-full flex flex-col relative overflow-hidden">
@@ -63,12 +40,12 @@ export const AppContent: React.FC<AppContentProps> = ({
         open={lightboxOpen}
         screenshots={config.screenshots}
         initialIndex={lightboxIndex}
-        singleImage={previewImage}
+        singleImage={null}
         onClose={back}
       />
 
       <div className="flex-1 overflow-y-auto no-scrollbar relative">
-        {currentView === 'discovery' && (
+        {state.view === 'discovery' && (
           <DiscoveryView
             config={config}
             lang={lang}
@@ -78,7 +55,7 @@ export const AppContent: React.FC<AppContentProps> = ({
             onOpenSettings={onOpenSettings}
           />
         )}
-        {currentView === 'search' && (
+        {state.view === 'search' && (
           <SearchView
             config={config}
             installLabel={strings.install}
@@ -88,7 +65,7 @@ export const AppContent: React.FC<AppContentProps> = ({
             onOpenSettings={onOpenSettings}
           />
         )}
-        {currentView === 'details' && (
+        {state.view === 'details' && (
           <DetailsView
             config={config}
             strings={strings}
@@ -100,7 +77,7 @@ export const AppContent: React.FC<AppContentProps> = ({
         )}
       </div>
 
-      {(currentView === 'discovery' || currentView === 'search') && <BottomNav lang={lang} />}
+      {(state.view === 'discovery' || state.view === 'search') && <BottomNav lang={lang} />}
     </div>
   );
 };

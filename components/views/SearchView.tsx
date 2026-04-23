@@ -71,7 +71,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
         <div className="mt-4 flex gap-3 overflow-x-auto no-scrollbar pb-2 items-center">
           {config.screenshots.map((src, idx) => (
             <div
-              key={idx}
+              key={src}
               className="h-[180px] w-auto bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200 cursor-pointer"
               onClick={() => onOpenLightbox(idx)}
             >
@@ -85,7 +85,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
           )}
         </div>
 
-        <button className="w-full mt-4 bg-[#2656C8] text-white font-medium py-2 rounded-full text-sm hover:bg-[#1E44A0] shadow-sm">
+        <button className="w-full mt-4 bg-brand text-white font-medium py-2 rounded-full text-sm hover:bg-brand-hover shadow-sm">
           {installLabel}
         </button>
       </div>

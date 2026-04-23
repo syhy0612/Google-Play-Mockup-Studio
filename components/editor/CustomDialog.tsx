@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from '../IconComponents';
 
-export type DialogType = 'confirm' | 'prompt';
+export type DialogType = 'confirm' | 'prompt' | 'alert';
 
 export interface DialogState {
   isOpen: boolean;
@@ -32,16 +32,34 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
     if (isOpen) setInputValue(defaultValue || '');
   }, [defaultValue, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
+
+  const titleId = 'dialog-title';
+  const descId = 'dialog-desc';
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center px-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          aria-describedby={message ? descId : undefined}
+          className="fixed inset-0 z-[80] flex items-center justify-center px-4"
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={type === 'alert' ? onClose : onClose}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -50,9 +68,13 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
             className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden z-[90]"
           >
             <div className="p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+              <h3 id={titleId} className="text-lg font-bold text-gray-900 mb-2">
+                {title}
+              </h3>
               {message && (
-                <p className="text-sm text-gray-600 mb-4 leading-relaxed">{message}</p>
+                <p id={descId} className="text-sm text-gray-600 mb-4 leading-relaxed">
+                  {message}
+                </p>
               )}
 
               {type === 'prompt' && (
@@ -71,6 +93,7 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
                     <button
                       onClick={() => setInputValue('')}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                      aria-label="Clear"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -79,15 +102,18 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
               )}
             </div>
             <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                取消
-              </button>
+              {type !== 'alert' && (
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+              )}
               <button
                 onClick={() => onConfirm(type === 'prompt' ? inputValue : undefined)}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#2656C8] hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+                autoFocus={type === 'alert'}
+                className="px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg shadow-sm transition-colors"
               >
                 确认
               </button>

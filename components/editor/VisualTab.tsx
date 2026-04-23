@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AppConfig } from '../../types';
 import { compressImage, fileToBase64 } from '../../utils/image';
-import { Box, ImageIcon, Upload, ArrowUp, ArrowDown, Trash2 } from '../IconComponents';
+import {
+  Box,
+  ImageIcon,
+  Upload,
+  ArrowUp,
+  ArrowDown,
+  Trash2,
+  Loader2,
+} from '../IconComponents';
+import { useDialog } from '../../hooks/useDialog';
+import { CustomDialog } from './CustomDialog';
 
 interface VisualTabProps {
   config: AppConfig;
@@ -10,12 +20,25 @@ interface VisualTabProps {
 }
 
 export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
+  const [uploading, setUploading] = useState(false);
+  const { dialog, open: openDialog, close: closeDialog } = useDialog();
+
+  const showError = (title: string, e: unknown) => {
+    openDialog({
+      type: 'alert',
+      title,
+      message: `${title}失败: ${(e as Error).message ?? String(e)}`,
+      onConfirm: closeDialog,
+    });
+  };
+
   const handleImageUpload = async (
     field: 'logoUrl' | 'bannerUrl',
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploading(true);
     try {
       const base64 = await fileToBase64(file);
       const compressed = await compressImage(
@@ -24,14 +47,18 @@ export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
         0.8,
       );
       setConfig((prev) => ({ ...prev, [field]: compressed }));
-    } catch (error) {
-      console.error('Error processing image:', error);
+    } catch (err) {
+      showError(field === 'logoUrl' ? '图标上传' : '大图上传', err);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
   };
 
   const handleScreenshotUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
+    setUploading(true);
     try {
       const rawBase64s = await Promise.all(Array.from(files).map(fileToBase64));
       const newScreenshots = await Promise.all(
@@ -41,8 +68,11 @@ export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
         ...prev,
         screenshots: [...prev.screenshots, ...newScreenshots],
       }));
-    } catch (error) {
-      console.error('Error processing screenshots:', error);
+    } catch (err) {
+      showError('截图上传', err);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
     }
   };
 
@@ -62,107 +92,142 @@ export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      <div className="flex gap-3">
-        <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden">
-          {config.logoUrl && (
-            <div
-              className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
-              style={{ backgroundImage: `url(${config.logoUrl})` }}
-            />
-          )}
-          <div className="relative z-10 flex flex-col items-center">
-            <Box className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600 font-medium">应用图标</span>
-          </div>
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={(e) => handleImageUpload('logoUrl', e)}
-          />
-        </label>
-        <label className="flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden">
-          {config.bannerUrl && (
-            <div
-              className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
-              style={{ backgroundImage: `url(${config.bannerUrl})` }}
-            />
-          )}
-          <div className="relative z-10 flex flex-col items-center">
-            <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm text-gray-600 font-medium">置顶大图</span>
-          </div>
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            onChange={(e) => handleImageUpload('bannerUrl', e)}
-          />
-        </label>
-      </div>
-
-      <div className="border border-gray-200 rounded-xl overflow-hidden">
-        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-          <span className="text-sm font-bold text-gray-700">截图管理</span>
-          <label className="cursor-pointer text-xs text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1">
-            <Upload className="w-4 h-4" />
-            上传截图
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6 relative"
+      >
+        <div className="flex gap-3">
+          <label
+            className={`flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden ${
+              uploading ? 'pointer-events-none opacity-60' : ''
+            }`}
+          >
+            {config.logoUrl && (
+              <div
+                className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
+                style={{ backgroundImage: `url(${config.logoUrl})` }}
+              />
+            )}
+            <div className="relative z-10 flex flex-col items-center">
+              <Box className="w-8 h-8 text-gray-400 mb-2" />
+              <span className="text-sm text-gray-600 font-medium">应用图标</span>
+            </div>
             <input
               type="file"
               hidden
-              multiple
               accept="image/*"
-              onChange={handleScreenshotUpload}
+              disabled={uploading}
+              onChange={(e) => handleImageUpload('logoUrl', e)}
+            />
+          </label>
+          <label
+            className={`flex-1 cursor-pointer flex flex-col items-center justify-center border border-dashed border-gray-300 rounded-xl p-4 hover:border-blue-500 hover:bg-blue-50 transition-all bg-gray-50 h-32 relative overflow-hidden ${
+              uploading ? 'pointer-events-none opacity-60' : ''
+            }`}
+          >
+            {config.bannerUrl && (
+              <div
+                className="absolute inset-0 opacity-10 bg-center bg-no-repeat bg-cover z-0 pointer-events-none"
+                style={{ backgroundImage: `url(${config.bannerUrl})` }}
+              />
+            )}
+            <div className="relative z-10 flex flex-col items-center">
+              <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
+              <span className="text-sm text-gray-600 font-medium">置顶大图</span>
+            </div>
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              disabled={uploading}
+              onChange={(e) => handleImageUpload('bannerUrl', e)}
             />
           </label>
         </div>
-        <div className="p-3 space-y-3 max-h-[500px] overflow-y-auto">
-          {config.screenshots.length === 0 && (
-            <div className="text-center py-8 text-sm text-gray-400">暂无截图</div>
-          )}
-          {config.screenshots.map((src, idx) => (
-            <motion.div
-              layout
-              key={`${src}-${idx}`}
-              className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group"
+
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+            <span className="text-sm font-bold text-gray-700">截图管理</span>
+            <label
+              className={`cursor-pointer text-xs text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1 ${
+                uploading ? 'pointer-events-none opacity-60' : ''
+              }`}
             >
-              <div className="w-16 h-24 bg-gray-100 rounded flex-shrink-0 overflow-hidden relative border border-gray-200">
-                <img src={src} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-gray-500 truncate">图{idx + 1}</div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => moveScreenshot(idx, -1)}
-                  disabled={idx === 0}
-                  className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
-                >
-                  <ArrowUp className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => moveScreenshot(idx, 1)}
-                  disabled={idx === config.screenshots.length - 1}
-                  className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
-                >
-                  <ArrowDown className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => deleteScreenshot(idx)}
-                  className="p-2 hover:bg-red-50 rounded text-red-500 ml-1"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
+              <Upload className="w-4 h-4" />
+              上传截图
+              <input
+                type="file"
+                hidden
+                multiple
+                accept="image/*"
+                disabled={uploading}
+                onChange={handleScreenshotUpload}
+              />
+            </label>
+          </div>
+          <div className="p-3 space-y-3 max-h-[500px] overflow-y-auto">
+            {config.screenshots.length === 0 && (
+              <div className="text-center py-8 text-sm text-gray-400">暂无截图</div>
+            )}
+            {config.screenshots.map((src, idx) => (
+              <motion.div
+                layout
+                key={src}
+                className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-100 shadow-sm group"
+              >
+                <div className="w-16 h-24 bg-gray-100 rounded flex-shrink-0 overflow-hidden relative border border-gray-200">
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-gray-500 truncate">图{idx + 1}</div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => moveScreenshot(idx, -1)}
+                    disabled={idx === 0}
+                    aria-label="上移"
+                    className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => moveScreenshot(idx, 1)}
+                    disabled={idx === config.screenshots.length - 1}
+                    aria-label="下移"
+                    className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => deleteScreenshot(idx)}
+                    aria-label="删除截图"
+                    className="p-2 hover:bg-red-50 rounded text-red-500 ml-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
-    </motion.div>
+
+        {uploading && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm rounded-xl z-10"
+          >
+            <div className="flex items-center gap-2 text-brand text-sm font-medium px-4 py-2 bg-white rounded-full shadow-md border border-gray-200">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              正在处理图片…
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      <CustomDialog {...dialog} onClose={closeDialog} />
+    </>
   );
 };

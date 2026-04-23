@@ -7,7 +7,7 @@ export const BottomNav: React.FC<{ lang: Language }> = ({ lang }) => {
   const t = getPreviewExtras(lang);
   return (
     <div className="border-t border-gray-200 bg-white flex justify-around py-3 px-2 pb-5 z-30">
-      <button className="flex flex-col items-center gap-1 text-[#2656C8] cursor-default">
+      <button className="flex flex-col items-center gap-1 text-brand cursor-default">
         <Gamepad2 className="w-6 h-6 fill-current" />
         <span className="text-xs font-medium">{t.games}</span>
       </button>

@@ -4,6 +4,7 @@ import { AppConfig, Language } from '../types';
 import { INITIAL_CONFIG } from '../constants';
 import { ImageIcon, Database, X, Settings, Edit3 } from './IconComponents';
 import { useDialog } from '../hooks/useDialog';
+import { useEscapeKey } from '../hooks/useEscapeKey';
 import { CustomDialog } from './editor/CustomDialog';
 import { InfoTab } from './editor/InfoTab';
 import { VisualTab } from './editor/VisualTab';
@@ -34,6 +35,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
+
+  useEscapeKey(isOpen && !dialog.isOpen, onClose);
 
   const handleResetSection = (section: 'info' | 'store' | 'global') => {
     openDialog({
@@ -79,7 +82,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       onClick={() => setActiveTab(id)}
       className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors ${
         activeTab === id
-          ? 'border-[#2656C8] text-[#2656C8]'
+          ? 'border-brand text-brand'
           : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
       }`}
     >
@@ -101,6 +104,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           />
 
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="editor-panel-title"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -108,12 +114,16 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
             className="fixed top-0 right-0 bottom-0 w-full md:w-[480px] bg-white shadow-2xl z-[70] flex flex-col"
           >
             <div className="bg-white z-10 px-6 pb-4 pt-[calc(1rem+env(safe-area-inset-top))] border-b border-gray-100 flex items-center justify-between shrink-0">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-[#2656C8]" />
+              <h2
+                id="editor-panel-title"
+                className="text-xl font-bold text-gray-800 flex items-center gap-2"
+              >
+                <Settings className="w-5 h-5 text-brand" />
                 配置面板
               </h2>
               <button
                 onClick={onClose}
+                aria-label="关闭配置面板"
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X className="w-6 h-6 text-gray-500" />

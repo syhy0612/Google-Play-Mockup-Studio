@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AppConfig, SavedScheme } from '../../types';
-import { addScheme, deleteScheme, getSchemes, updateScheme } from '../../utils/storage';
+import {
+  addScheme,
+  deleteScheme,
+  getSchemes,
+  StorageError,
+  updateScheme,
+} from '../../utils/storage';
 import { generateUUID } from '../../utils/uuid';
 import { Save, Edit3, Trash2, Download } from '../IconComponents';
 import { useDialog } from '../../hooks/useDialog';
@@ -44,10 +50,19 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
 
   useEffect(() => {
-    getSchemes()
-      .then(setSchemes)
-      .catch((e) => console.error('Failed to load schemes', e));
+    setSchemes(getSchemes());
   }, []);
+
+  const showError = (title: string, e: unknown) => {
+    const message =
+      e instanceof StorageError ? e.message : `${title}失败: ${(e as Error).message ?? String(e)}`;
+    openDialog({
+      type: 'alert',
+      title,
+      message,
+      onConfirm: closeDialog,
+    });
+  };
 
   const handleSave = () => {
     openDialog({
@@ -55,7 +70,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
       title: '保存方案',
       message: '请输入方案名称',
       defaultValue: getNextDefaultName(schemes),
-      onConfirm: async (name) => {
+      onConfirm: (name) => {
         if (!name) return;
         const newScheme: SavedScheme = {
           id: generateUUID(),
@@ -66,13 +81,12 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
         const previous = schemes;
         setSchemes([newScheme, ...schemes]);
         try {
-          await addScheme(newScheme);
+          addScheme(newScheme);
+          closeDialog();
         } catch (e) {
-          console.error('Save failed', e);
-          alert('保存失败 (Storage Failed): ' + e);
           setSchemes(previous);
+          showError('保存', e);
         }
-        closeDialog();
       },
     });
   };
@@ -83,7 +97,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
       title: '重命名方案',
       message: '请输入新的方案名称',
       defaultValue: scheme.name,
-      onConfirm: async (newName) => {
+      onConfirm: (newName) => {
         if (!newName || newName === scheme.name) {
           closeDialog();
           return;
@@ -92,13 +106,12 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
         const previous = schemes;
         setSchemes(schemes.map((s) => (s.id === scheme.id ? updated : s)));
         try {
-          await updateScheme(updated);
+          updateScheme(updated);
+          closeDialog();
         } catch (e) {
-          console.error('Update failed', e);
-          alert('重命名失败: ' + e);
           setSchemes(previous);
+          showError('重命名', e);
         }
-        closeDialog();
       },
     });
   };
@@ -108,17 +121,16 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
       type: 'confirm',
       title: '删除方案',
       message: '确定要删除这个方案吗？此操作无法撤销。',
-      onConfirm: async () => {
+      onConfirm: () => {
         const previous = schemes;
         setSchemes(schemes.filter((s) => s.id !== id));
         try {
-          await deleteScheme(id);
+          deleteScheme(id);
+          closeDialog();
         } catch (e) {
-          console.error('Delete failed', e);
-          alert('删除失败: ' + e);
           setSchemes(previous);
+          showError('删除', e);
         }
-        closeDialog();
       },
     });
   };
@@ -128,18 +140,17 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
       type: 'confirm',
       title: '更新方案',
       message: `确定要用当前配置覆盖 "${scheme.name}" 吗？此操作无法撤销。`,
-      onConfirm: async () => {
+      onConfirm: () => {
         const updated = { ...scheme, config: { ...config }, savedAt: Date.now() };
         const previous = schemes;
         setSchemes(schemes.map((s) => (s.id === scheme.id ? updated : s)));
         try {
-          await updateScheme(updated);
+          updateScheme(updated);
+          closeDialog();
         } catch (e) {
-          console.error('Update failed', e);
-          alert('更新失败: ' + e);
           setSchemes(previous);
+          showError('更新', e);
         }
-        closeDialog();
       },
     });
   };
@@ -165,7 +176,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
       >
         <button
           onClick={handleSave}
-          className="w-full py-3 bg-[#2656C8] text-white rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 bg-brand text-white rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:bg-brand-hover transition-all flex items-center justify-center gap-2"
         >
           <Save className="w-5 h-5" />
           保存当前方案
@@ -192,6 +203,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
                           onClick={() => handleRename(scheme)}
                           className="opacity-0 group-hover/title:opacity-100 text-gray-400 hover:text-blue-600 transition-opacity"
                           title="重命名"
+                          aria-label={`重命名 ${scheme.name}`}
                         >
                           <Edit3 className="w-3 h-3" />
                         </button>
@@ -204,6 +216,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
                     <button
                       onClick={() => handleDelete(scheme.id)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label={`删除 ${scheme.name}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -215,9 +228,9 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
                         className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover"
                         alt=""
                       />
-                      {scheme.config.screenshots.slice(0, 3).map((s, i) => (
+                      {scheme.config.screenshots.slice(0, 3).map((s) => (
                         <img
-                          key={i}
+                          key={s}
                           src={s}
                           className="inline-block h-6 w-6 rounded-full ring-2 ring-white object-cover bg-gray-100"
                           alt=""
