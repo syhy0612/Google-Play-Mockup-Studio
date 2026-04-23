@@ -1,8 +1,10 @@
-# Google Play Mockup Studio
+# App Preview
 
 **简体中文** | [English](./README_EN.md)
 
-一个高保真的 Google Play 商店详情页生成器和模拟器。该工具允许开发者和设计师通过像素级完美的移动端界面，实时预览和自定义他们的应用商店展示效果。
+一个移动端应用上架页面的设计预览工具。允许开发者和设计师通过高保真的移动端界面，实时预览和自定义他们的应用展示页设计。
+
+> **免责声明**：本项目仅用于设计演示与学习目的，与 Google LLC 或 Google Play 没有任何隶属、背书或关联关系。所有预览布局均为独立实现的 UI 设计参考。
 
 ## 🚀 在线预览与下载
 
@@ -18,7 +20,7 @@
 
 ## ✨ 主要特性
 
-*   **真实模拟**：精准复刻 Google Play 商店体验，包括发现页（首页）、搜索页和应用详情页。
+*   **高保真预览**：模拟典型的移动端应用展示页结构，包括发现页（首页）、搜索页和应用详情页。
 *   **实时编辑器**：
     *   **自定义元数据**：编辑应用名称、开发者名称、描述、评分、下载量等信息。
     *   **资源管理**：上传和管理应用图标、置顶大图（Feature Banner）和屏幕截图。
@@ -31,7 +33,7 @@
     *   **刘海屏/安全区域支持**：使用 `safe-area-inset` 完美适配带刘海/挖孔的设备（如现代 iPhone 和 Android 手机）。
     *   **触摸交互**：使用 Framer Motion 实现拖拽滚动画廊和流畅的转场动画。
 *   **本地化**：内置英语 (EN) 和中文 (ZH) 界面语言支持。
-*   **蓝色主题**：更新至最新的 Play 商店视觉风格，统一使用 #2656C8 强调色。
+*   **蓝色主题**：采用现代化 Material 风格的蓝色主题，统一使用 #2656C8 强调色。
 
 ## 技术栈
 
@@ -53,8 +55,8 @@
 
 1.  克隆仓库：
     ```bash
-    git clone https://github.com/yourusername/google-play-mockup-studio.git
-    cd google-play-mockup-studio
+    git clone https://github.com/yourusername/app-preview.git
+    cd app-preview
     ```
 
 2.  安装依赖：

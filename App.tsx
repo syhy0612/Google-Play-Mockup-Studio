@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { AppConfig, Language } from './types';
 import { INITIAL_CONFIG, DICTIONARY } from './constants';
 import { AppContent } from './components/AppContent';
+import { DemoBadge } from './components/DemoBadge';
 import { EditorPanel } from './components/EditorPanel';
 import {
   HistoryStateProvider,
@@ -31,6 +32,7 @@ const AppShell: React.FC = () => {
 
   const [lang, setLang] = useState<Language>('en');
   const [galleryHeight, setGalleryHeight] = useState(160);
+  const [showWatermark, setShowWatermark] = useState(true);
 
   const { state, push, back } = useHistoryState();
   const strings = DICTIONARY[lang];
@@ -74,6 +76,7 @@ const AppShell: React.FC = () => {
             onOpenSettings={() => push({ overlay: 'settings' })}
           />
         </div>
+        <DemoBadge visible={showWatermark} />
       </div>
 
       <EditorPanel
@@ -85,6 +88,8 @@ const AppShell: React.FC = () => {
         onClose={back}
         galleryHeight={galleryHeight}
         setGalleryHeight={setGalleryHeight}
+        showWatermark={showWatermark}
+        setShowWatermark={setShowWatermark}
       />
     </div>
   );

@@ -1,9 +1,9 @@
 import { AppConfig, I18nStrings, Language } from './types';
 
 export const INITIAL_CONFIG: AppConfig = {
-  appName: "Play Mockup",
+  appName: "App Preview",
   devName: "Telegram@MayGong",
-  description: "It simulates the Google Play app store experience and supports native swiping and image editing.",
+  description: "A design preview tool that simulates a mobile app listing UI with native swiping and image editing.",
   rating: "4.7",
   downloads: "500M+",
   reviews: "12M",

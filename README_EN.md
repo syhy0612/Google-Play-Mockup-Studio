@@ -1,8 +1,10 @@
-# Google Play Mockup Studio
+# App Preview
 
 **English** | [简体中文](./README.md)
 
-A high-fidelity Google Play Store listing generator and simulator. This tool allows developers and designers to preview and customize their app store presence in real-time with a pixel-perfect mobile interface.
+A mobile app listing design preview tool. Allows developers and designers to preview and customize their app listing designs in real-time with a high-fidelity mobile interface.
+
+> **Disclaimer**: This project is for design demonstration and educational purposes only. It is NOT affiliated with, endorsed by, or connected to Google LLC or Google Play. All previewed layouts are independent UI design references.
 
 ## 🚀 Live Demo & Download
 
@@ -18,7 +20,7 @@ A high-fidelity Google Play Store listing generator and simulator. This tool all
 
 ## ✨ Features
 
-*   **Realistic Simulation**: Accurately mimics the Google Play Store experience, including Discovery (Home), Search, and App Details views.
+*   **High-Fidelity Preview**: Simulates a typical mobile app listing layout, including Discovery (Home), Search, and App Details views.
 *   **Real-time Editor**:
     *   **Customize Metadata**: Edit App Name, Developer Name, Description, Ratings, Downloads, and more.
     *   **Asset Management**: Upload and manage App Icon, Feature Banner, and Screenshots.
@@ -31,7 +33,7 @@ A high-fidelity Google Play Store listing generator and simulator. This tool all
     *   **Notch/Safe-area Support**: Fully adapted for devices with notches/cutouts (e.g., modern iPhones, Androids) using `safe-area-inset`.
     *   **Touch Interactions**: Drag-to-scroll galleries and smooth transitions using Framer Motion.
 *   **Localization**: Built-in support for English (EN) and Chinese (ZH) interface languages.
-*   **Blue Theme**: Updated to the latest Play Store visual style with #2656C8 accent color.
+*   **Blue Theme**: Modern Material-style blue theme with #2656C8 accent color.
 
 ## Tech Stack
 
@@ -53,8 +55,8 @@ A high-fidelity Google Play Store listing generator and simulator. This tool all
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/google-play-mockup-studio.git
-    cd google-play-mockup-studio
+    git clone https://github.com/yourusername/app-preview.git
+    cd app-preview
     ```
 
 2.  Install dependencies:

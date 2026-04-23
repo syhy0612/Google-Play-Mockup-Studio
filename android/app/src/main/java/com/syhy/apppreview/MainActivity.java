@@ -1,4 +1,4 @@
-package com.google.mockup;
+package com.syhy.apppreview;
 
 import com.getcapacitor.BridgeActivity;
 

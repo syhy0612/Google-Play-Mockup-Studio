@@ -19,6 +19,8 @@ interface EditorPanelProps {
   onClose: () => void;
   galleryHeight: number;
   setGalleryHeight: (h: number) => void;
+  showWatermark: boolean;
+  setShowWatermark: (v: boolean) => void;
 }
 
 type TabId = 'info' | 'visual' | 'schemes';
@@ -32,6 +34,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   onClose,
   galleryHeight,
   setGalleryHeight,
+  showWatermark,
+  setShowWatermark,
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
@@ -148,7 +152,14 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   onReset={handleResetSection}
                 />
               )}
-              {activeTab === 'visual' && <VisualTab config={config} setConfig={setConfig} />}
+              {activeTab === 'visual' && (
+                <VisualTab
+                  config={config}
+                  setConfig={setConfig}
+                  showWatermark={showWatermark}
+                  setShowWatermark={setShowWatermark}
+                />
+              )}
               {activeTab === 'schemes' && <SchemesTab config={config} setConfig={setConfig} />}
             </div>
           </motion.div>

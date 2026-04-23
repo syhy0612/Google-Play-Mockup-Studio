@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.google.mockup',
-  appName: 'Play Mockup',
+  appId: 'com.syhy.apppreview',
+  appName: 'App Preview',
   webDir: 'dist',
   
   // ✨ 新增这部分配置 ✨

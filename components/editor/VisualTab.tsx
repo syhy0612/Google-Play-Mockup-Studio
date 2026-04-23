@@ -17,9 +17,16 @@ import { CustomDialog } from './CustomDialog';
 interface VisualTabProps {
   config: AppConfig;
   setConfig: React.Dispatch<React.SetStateAction<AppConfig>>;
+  showWatermark: boolean;
+  setShowWatermark: (v: boolean) => void;
 }
 
-export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
+export const VisualTab: React.FC<VisualTabProps> = ({
+  config,
+  setConfig,
+  showWatermark,
+  setShowWatermark,
+}) => {
   const [uploading, setUploading] = useState(false);
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
 
@@ -225,6 +232,33 @@ export const VisualTab: React.FC<VisualTabProps> = ({ config, setConfig }) => {
             </div>
           </div>
         )}
+
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-gray-800">预览水印</div>
+              <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                关闭后可以截图无遮挡。重新打开应用时自动恢复显示。
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showWatermark}
+              aria-label="预览水印开关"
+              onClick={() => setShowWatermark(!showWatermark)}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
+                showWatermark ? 'bg-brand' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  showWatermark ? 'translate-x-5' : ''
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </motion.div>
 
       <CustomDialog {...dialog} onClose={closeDialog} />
