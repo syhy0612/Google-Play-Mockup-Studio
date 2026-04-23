@@ -3,6 +3,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { AppConfig, Language } from './types';
 import { INITIAL_CONFIG, DICTIONARY } from './constants';
+import { getShowWatermark, setShowWatermark as saveWatermark } from './utils/storage';
 import { AppContent } from './components/AppContent';
 import { DemoBadge } from './components/DemoBadge';
 import { EditorPanel } from './components/EditorPanel';
@@ -32,7 +33,12 @@ const AppShell: React.FC = () => {
 
   const [lang, setLang] = useState<Language>('en');
   const [galleryHeight, setGalleryHeight] = useState(160);
-  const [showWatermark, setShowWatermark] = useState(true);
+  const [showWatermark, setShowWatermark] = useState<boolean>(() => getShowWatermark());
+
+  const handleSetWatermark = (v: boolean) => {
+    setShowWatermark(v);
+    saveWatermark(v);
+  };
 
   const { state, push, back } = useHistoryState();
   const strings = DICTIONARY[lang];
@@ -89,7 +95,7 @@ const AppShell: React.FC = () => {
         galleryHeight={galleryHeight}
         setGalleryHeight={setGalleryHeight}
         showWatermark={showWatermark}
-        setShowWatermark={setShowWatermark}
+        setShowWatermark={handleSetWatermark}
       />
     </div>
   );
