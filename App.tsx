@@ -115,10 +115,11 @@ const App: React.FC = () => {
         
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth relative bg-white flex flex-col">
-            <AppContent 
-              config={config} 
-              strings={strings} 
-              galleryHeight={galleryHeight} 
+            <AppContent
+              config={config}
+              strings={strings}
+              lang={lang}
+              galleryHeight={galleryHeight}
               onOpenSettings={handleOpenSettings}
             />
         </div>
