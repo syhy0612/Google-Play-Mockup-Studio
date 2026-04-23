@@ -3,6 +3,7 @@ import { SavedScheme } from '../types';
 const LEGACY_STORAGE_KEY = 'mockup_schemes';
 const LIST_KEY = 'mockup_scheme_ids';
 const SCHEME_PREFIX = 'scheme_';
+const SHOW_WATERMARK_KEY = 'app_show_watermark';
 
 export type StorageErrorReason = 'quota' | 'unknown';
 
@@ -30,9 +31,9 @@ const safeWrite = (key: string, value: string) => {
     localStorage.setItem(key, value);
   } catch (e) {
     if (isQuotaError(e)) {
-      throw new StorageError('quota', '本地存储空间已满，请删除部分方案或截图后重试。');
+      throw new StorageError('quota', 'Storage is full. Please delete some schemes or screenshots and try again.');
     }
-    throw new StorageError('unknown', `存储失败: ${(e as Error).message ?? String(e)}`);
+    throw new StorageError('unknown', `Storage failed: ${(e as Error).message ?? String(e)}`);
   }
 };
 
@@ -89,4 +90,19 @@ export const updateScheme = (scheme: SavedScheme): void => {
 export const deleteScheme = (id: string): void => {
   localStorage.removeItem(SCHEME_PREFIX + id);
   safeWrite(LIST_KEY, JSON.stringify(readIds().filter((i) => i !== id)));
+};
+
+// showWatermark persisted key, true by default (first launch always on, per-review)
+export const getShowWatermark = (): boolean => {
+  try {
+    const stored = localStorage.getItem(SHOW_WATERMARK_KEY);
+    if (stored === null) return true;
+    return JSON.parse(stored) as boolean;
+  } catch {
+    return true;
+  }
+};
+
+export const setShowWatermark = (v: boolean): void => {
+  localStorage.setItem(SHOW_WATERMARK_KEY, JSON.stringify(v));
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppConfig, Language } from '../types';
-import { INITIAL_CONFIG } from '../constants';
+import { INITIAL_CONFIG, UI_STRINGS } from '../constants';
 import { ImageIcon, Database, X, Settings, Edit3 } from './IconComponents';
 import { useDialog } from '../hooks/useDialog';
 import { useEscapeKey } from '../hooks/useEscapeKey';
@@ -39,14 +39,15 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
+  const ui = UI_STRINGS[lang];
 
   useEscapeKey(isOpen && !dialog.isOpen, onClose);
 
   const handleResetSection = (section: 'info' | 'store' | 'global') => {
     openDialog({
       type: 'confirm',
-      title: '重置设置',
-      message: '确定要重置该部分的设置吗？',
+      title: ui.resetTitle,
+      message: ui.resetMessage,
       onConfirm: () => {
         if (section === 'info') {
           setConfig((prev) => ({
@@ -67,6 +68,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         } else {
           setLang('en');
           setGalleryHeight(160);
+          setShowWatermark(true);
         }
         closeDialog();
       },
@@ -123,11 +125,11 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 className="text-xl font-bold text-gray-800 flex items-center gap-2"
               >
                 <Settings className="w-5 h-5 text-brand" />
-                配置面板
+                {ui.settingsPanel}
               </h2>
               <button
                 onClick={onClose}
-                aria-label="关闭配置面板"
+                aria-label={ui.closePanel}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X className="w-6 h-6 text-gray-500" />
@@ -135,9 +137,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
             </div>
 
             <div className="flex border-b border-gray-200 shrink-0">
-              <TabButton id="info" label="信息" icon={Edit3} />
-              <TabButton id="visual" label="视觉" icon={ImageIcon} />
-              <TabButton id="schemes" label="方案" icon={Database} />
+              <TabButton id="info" label={ui.tabInfo} icon={Edit3} />
+              <TabButton id="visual" label={ui.tabVisual} icon={ImageIcon} />
+              <TabButton id="schemes" label={ui.tabSchemes} icon={Database} />
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -156,15 +158,22 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <VisualTab
                   config={config}
                   setConfig={setConfig}
+                  lang={lang}
                   showWatermark={showWatermark}
                   setShowWatermark={setShowWatermark}
                 />
               )}
-              {activeTab === 'schemes' && <SchemesTab config={config} setConfig={setConfig} />}
+              {activeTab === 'schemes' && (
+                <SchemesTab
+                  config={config}
+                  setConfig={setConfig}
+                  lang={lang}
+                />
+              )}
             </div>
           </motion.div>
 
-          <CustomDialog {...dialog} onClose={closeDialog} />
+          <CustomDialog {...dialog} onClose={closeDialog} ui={ui} />
         </>
       )}
     </AnimatePresence>

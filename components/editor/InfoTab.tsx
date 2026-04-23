@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import { AppConfig, Language } from '../../types';
-import { INITIAL_CONFIG } from '../../constants';
+import { INITIAL_CONFIG, UI_STRINGS } from '../../constants';
 import { InputGroup, TextAreaGroup } from './InputGroup';
 import { X, RotateCcw } from '../IconComponents';
 
@@ -24,6 +24,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   setGalleryHeight,
   onReset,
 }) => {
+  const ui = UI_STRINGS[lang];
   const [tagInput, setTagInput] = useState('');
 
   const handleInputChange = (field: keyof AppConfig, value: string) => {
@@ -50,31 +51,31 @@ export const InfoTab: React.FC<InfoTabProps> = ({
     >
       <section>
         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
-          基本信息
+          {ui.basicInfo}
           <button
             onClick={() => onReset('info')}
             className="text-gray-400 hover:text-gray-600 p-1"
-            title="重置"
+            title={ui.reset}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </h3>
         <div className="space-y-3">
           <InputGroup
-            label="应用名称"
+            label={ui.appName}
             value={config.appName}
             onChange={(val) => handleInputChange('appName', val)}
             placeholder={INITIAL_CONFIG.appName}
           />
           <InputGroup
-            label="开发者名称"
+            label={ui.developer}
             value={config.devName}
             onChange={(val) => handleInputChange('devName', val)}
             placeholder={INITIAL_CONFIG.devName}
           />
 
           <div className="space-y-1">
-            <label className="text-xs text-gray-500 ml-1">应用标签</label>
+            <label className="text-xs text-gray-500 ml-1">{ui.appTags}</label>
             <div className="flex gap-2 mb-2">
               <div className="relative flex-1 group">
                 <input
@@ -82,13 +83,14 @@ export const InfoTab: React.FC<InfoTabProps> = ({
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addTag()}
-                  placeholder="Add tag"
+                  placeholder={ui.addTag}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none pr-8"
                 />
                 {tagInput && (
                   <button
                     onClick={() => setTagInput('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                    aria-label="Clear"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -98,7 +100,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
                 onClick={addTag}
                 className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
               >
-                Add
+                {ui.addTag}
               </button>
             </div>
             <Reorder.Group
@@ -128,7 +130,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
           </div>
 
           <TextAreaGroup
-            label="应用描述"
+            label={ui.description}
             value={config.description}
             onChange={(val) => handleInputChange('description', val)}
             placeholder={INITIAL_CONFIG.description}
@@ -138,36 +140,36 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       <section>
         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
-          商店数据
+          {ui.storeData}
           <button
             onClick={() => onReset('store')}
             className="text-gray-400 hover:text-gray-600 p-1"
-            title="重置"
+            title={ui.reset}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <InputGroup
-            label="评分"
+            label={ui.rating}
             value={config.rating}
             onChange={(val) => handleInputChange('rating', val)}
             placeholder={INITIAL_CONFIG.rating}
           />
           <InputGroup
-            label="下载量"
+            label={ui.downloads}
             value={config.downloads}
             onChange={(val) => handleInputChange('downloads', val)}
             placeholder={INITIAL_CONFIG.downloads}
           />
           <InputGroup
-            label="应用大小"
+            label={ui.size}
             value={config.size}
             onChange={(val) => handleInputChange('size', val)}
             placeholder={INITIAL_CONFIG.size}
           />
           <InputGroup
-            label="分级"
+            label={ui.ratedFor}
             value={config.ratedFor}
             onChange={(val) => handleInputChange('ratedFor', val)}
             placeholder={INITIAL_CONFIG.ratedFor}
@@ -177,18 +179,18 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       <section>
         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex justify-between items-center">
-          全局设置
+          {ui.globalSettings}
           <button
             onClick={() => onReset('global')}
             className="text-gray-400 hover:text-gray-600 p-1"
-            title="重置"
+            title={ui.reset}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </h3>
         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">预览语言</span>
+            <span className="text-sm font-medium text-gray-600">{ui.previewLang}</span>
             <div className="flex border border-gray-300 rounded-lg overflow-hidden bg-white">
               <button
                 onClick={() => setLang('en')}
@@ -210,7 +212,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
           </div>
           <div className="pt-2 border-t border-gray-200">
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-bold text-gray-700">截图区域高度</label>
+              <label className="text-xs font-bold text-gray-700">{ui.galleryHeight}</label>
               <span className="text-xs text-blue-600 font-mono">{galleryHeight}px</span>
             </div>
             <input

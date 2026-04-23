@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AppConfig, SavedScheme } from '../../types';
+import { AppConfig, Language } from '../../types';
+import { UI_STRINGS } from '../../constants';
+import { StorageError } from '../../utils/storage';
 import {
   addScheme,
   deleteScheme,
   getSchemes,
-  StorageError,
   updateScheme,
 } from '../../utils/storage';
 import { generateUUID } from '../../utils/uuid';
@@ -16,50 +17,23 @@ import { CustomDialog } from './CustomDialog';
 interface SchemesTabProps {
   config: AppConfig;
   setConfig: React.Dispatch<React.SetStateAction<AppConfig>>;
+  lang: Language;
 }
 
-const getNextDefaultName = (schemes: SavedScheme[]) => {
-  const now = new Date();
-  const datePart = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
-  const prefix = `${datePart}-`;
-
-  const existingSuffixes = schemes
-    .filter((s) => s.name.startsWith(prefix))
-    .map((s) => s.name.slice(prefix.length));
-
-  if (existingSuffixes.length === 0) return `${prefix}A`;
-
-  let counter = 0;
-  while (true) {
-    let suffix = '';
-    let i = counter;
-    do {
-      suffix = String.fromCharCode(65 + (i % 26)) + suffix;
-      i = Math.floor(i / 26) - 1;
-    } while (i >= 0);
-
-    if (!existingSuffixes.includes(suffix)) {
-      return prefix + suffix;
-    }
-    counter++;
-  }
-};
-
-export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => {
-  const [schemes, setSchemes] = useState<SavedScheme[]>([]);
+export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig, lang }) => {
+  const ui = UI_STRINGS[lang];
+  const [schemes, setSchemes] = useState<import('../../types').SavedScheme[]>([]);
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
 
   useEffect(() => {
     setSchemes(getSchemes());
   }, []);
 
-  const showError = (title: string, e: unknown) => {
-    const message =
-      e instanceof StorageError ? e.message : `${title}失败: ${(e as Error).message ?? String(e)}`;
+  const showError = (msg: string, e: unknown) => {
     openDialog({
       type: 'alert',
-      title,
-      message,
+      title: msg,
+      message: e instanceof StorageError ? e.message : `${(e as Error).message ?? String(e)}`,
       onConfirm: closeDialog,
     });
   };
@@ -67,12 +41,12 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
   const handleSave = () => {
     openDialog({
       type: 'prompt',
-      title: '保存方案',
-      message: '请输入方案名称',
+      title: ui.saveScheme,
+      message: ui.saveSchemeMsg,
       defaultValue: getNextDefaultName(schemes),
       onConfirm: (name) => {
         if (!name) return;
-        const newScheme: SavedScheme = {
+        const newScheme = {
           id: generateUUID(),
           name,
           config: { ...config },
@@ -85,17 +59,17 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
           closeDialog();
         } catch (e) {
           setSchemes(previous);
-          showError('保存', e);
+          showError(ui.saveFailed, e);
         }
       },
     });
   };
 
-  const handleRename = (scheme: SavedScheme) => {
+  const handleRename = (scheme: import('../../types').SavedScheme) => {
     openDialog({
       type: 'prompt',
-      title: '重命名方案',
-      message: '请输入新的方案名称',
+      title: ui.renameScheme,
+      message: ui.renameSchemeMsg,
       defaultValue: scheme.name,
       onConfirm: (newName) => {
         if (!newName || newName === scheme.name) {
@@ -110,7 +84,7 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
           closeDialog();
         } catch (e) {
           setSchemes(previous);
-          showError('重命名', e);
+          showError(ui.renameFailed, e);
         }
       },
     });
@@ -119,8 +93,8 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
   const handleDelete = (id: string) => {
     openDialog({
       type: 'confirm',
-      title: '删除方案',
-      message: '确定要删除这个方案吗？此操作无法撤销。',
+      title: ui.deleteScheme,
+      message: ui.deleteSchemeMsg,
       onConfirm: () => {
         const previous = schemes;
         setSchemes(schemes.filter((s) => s.id !== id));
@@ -129,17 +103,17 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
           closeDialog();
         } catch (e) {
           setSchemes(previous);
-          showError('删除', e);
+          showError(ui.deleteFailed, e);
         }
       },
     });
   };
 
-  const handleUpdate = (scheme: SavedScheme) => {
+  const handleUpdate = (scheme: import('../../types').SavedScheme) => {
     openDialog({
       type: 'confirm',
-      title: '更新方案',
-      message: `确定要用当前配置覆盖 "${scheme.name}" 吗？此操作无法撤销。`,
+      title: ui.updateScheme,
+      message: ui.updateSchemeMsg.replace('{name}', scheme.name),
       onConfirm: () => {
         const updated = { ...scheme, config: { ...config }, savedAt: Date.now() };
         const previous = schemes;
@@ -149,17 +123,17 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
           closeDialog();
         } catch (e) {
           setSchemes(previous);
-          showError('更新', e);
+          showError(ui.updateFailed, e);
         }
       },
     });
   };
 
-  const handleLoad = (scheme: SavedScheme) => {
+  const handleLoad = (scheme: import('../../types').SavedScheme) => {
     openDialog({
       type: 'confirm',
-      title: '加载方案',
-      message: `确定要加载 "${scheme.name}" 吗？当前未保存的更改将会丢失。`,
+      title: ui.loadScheme,
+      message: ui.loadSchemeMsg.replace('{name}', scheme.name),
       onConfirm: () => {
         setConfig(scheme.config);
         closeDialog();
@@ -179,14 +153,14 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
           className="w-full py-3 bg-brand text-white rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:bg-brand-hover transition-all flex items-center justify-center gap-2"
         >
           <Save className="w-5 h-5" />
-          保存当前方案
+          {ui.saveCurrentScheme}
         </button>
 
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">已保存的方案</h3>
+          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">{ui.savedSchemes}</h3>
           {schemes.length === 0 ? (
             <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              没有保存的方案
+              {ui.noSavedSchemes}
             </div>
           ) : (
             <div className="space-y-3">
@@ -202,21 +176,20 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
                         <button
                           onClick={() => handleRename(scheme)}
                           className="opacity-0 group-hover/title:opacity-100 text-gray-400 hover:text-blue-600 transition-opacity"
-                          title="重命名"
-                          aria-label={`重命名 ${scheme.name}`}
+                          title={ui.rename}
+                          aria-label={`${ui.rename} ${scheme.name}`}
                         >
                           <Edit3 className="w-3 h-3" />
                         </button>
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        {new Date(scheme.savedAt).toLocaleString()} • 应用截图*
-                        {scheme.config.screenshots.length}
+                        {new Date(scheme.savedAt).toLocaleString()} • {scheme.config.screenshots.length} {ui.schemeScreenshots}
                       </div>
                     </div>
                     <button
                       onClick={() => handleDelete(scheme.id)}
                       className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      aria-label={`删除 ${scheme.name}`}
+                      aria-label={`${ui.delete} ${scheme.name}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -242,15 +215,15 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
                       <button
                         onClick={() => handleUpdate(scheme)}
                         className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 flex items-center gap-1 transition-colors"
-                        title="保存当前配置覆盖此方案"
+                        title={ui.save}
                       >
-                        <Save className="w-3 h-3" /> 保存
+                        <Save className="w-3 h-3" /> {ui.save}
                       </button>
                       <button
                         onClick={() => handleLoad(scheme)}
                         className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 flex items-center gap-1 transition-colors"
                       >
-                        <Download className="w-3 h-3" /> 加载
+                        <Download className="w-3 h-3" /> {ui.load}
                       </button>
                     </div>
                   </div>
@@ -261,7 +234,34 @@ export const SchemesTab: React.FC<SchemesTabProps> = ({ config, setConfig }) => 
         </div>
       </motion.div>
 
-      <CustomDialog {...dialog} onClose={closeDialog} />
+      <CustomDialog {...dialog} onClose={closeDialog} ui={ui} />
     </>
   );
 };
+
+function getNextDefaultName(schemes: import('../../types').SavedScheme[]) {
+  const now = new Date();
+  const datePart = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
+  const prefix = `${datePart}-`;
+
+  const existingSuffixes = schemes
+    .filter((s) => s.name.startsWith(prefix))
+    .map((s) => s.name.slice(prefix.length));
+
+  if (existingSuffixes.length === 0) return `${prefix}A`;
+
+  let counter = 0;
+  while (true) {
+    let suffix = '';
+    let i = counter;
+    do {
+      suffix = String.fromCharCode(65 + (i % 26)) + suffix;
+      i = Math.floor(i / 26) - 1;
+    } while (i >= 0);
+
+    if (!existingSuffixes.includes(suffix)) {
+      return prefix + suffix;
+    }
+    counter++;
+  }
+}

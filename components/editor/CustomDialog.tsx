@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from '../IconComponents';
+import { UIStrings } from '../../constants';
 
 export type DialogType = 'confirm' | 'prompt' | 'alert';
 
@@ -15,16 +16,17 @@ export interface DialogState {
 
 interface CustomDialogProps extends DialogState {
   onClose: () => void;
+  ui: UIStrings;
 }
 
 export const CustomDialog: React.FC<CustomDialogProps> = ({
   isOpen,
-  type,
   title,
   message,
   defaultValue,
   onConfirm,
   onClose,
+  ui,
 }) => {
   const [inputValue, setInputValue] = useState(defaultValue || '');
 
@@ -59,7 +61,7 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={type === 'alert' ? onClose : onClose}
+            onClick={onClose}
           />
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -77,7 +79,7 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
                 </p>
               )}
 
-              {type === 'prompt' && (
+              {defaultValue !== undefined && (
                 <div className="relative group">
                   <input
                     type="text"
@@ -102,20 +104,20 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
               )}
             </div>
             <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
-              {type !== 'alert' && (
+              {defaultValue !== undefined && (
                 <button
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
                 >
-                  取消
+                  {ui.cancel}
                 </button>
               )}
               <button
-                onClick={() => onConfirm(type === 'prompt' ? inputValue : undefined)}
-                autoFocus={type === 'alert'}
+                onClick={() => onConfirm(inputValue || undefined)}
+                autoFocus
                 className="px-4 py-2 text-sm font-medium text-white bg-brand hover:bg-brand-hover rounded-lg shadow-sm transition-colors"
               >
-                确认
+                {ui.confirm}
               </button>
             </div>
           </motion.div>

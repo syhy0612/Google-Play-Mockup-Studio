@@ -4,7 +4,8 @@
       "Bash(npm run *)",
       "PowerShell(java *)",
       "PowerShell(node gen-icons.cjs)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "Bash(npx cap *)"
     ]
   }
 }

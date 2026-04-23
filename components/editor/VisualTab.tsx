@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AppConfig } from '../../types';
+import { AppConfig, Language } from '../../types';
+import { UI_STRINGS } from '../../constants';
 import { compressImage, fileToBase64 } from '../../utils/image';
 import {
   Box,
@@ -17,6 +18,7 @@ import { CustomDialog } from './CustomDialog';
 interface VisualTabProps {
   config: AppConfig;
   setConfig: React.Dispatch<React.SetStateAction<AppConfig>>;
+  lang: Language;
   showWatermark: boolean;
   setShowWatermark: (v: boolean) => void;
 }
@@ -24,17 +26,19 @@ interface VisualTabProps {
 export const VisualTab: React.FC<VisualTabProps> = ({
   config,
   setConfig,
+  lang,
   showWatermark,
   setShowWatermark,
 }) => {
+  const ui = UI_STRINGS[lang];
   const [uploading, setUploading] = useState(false);
   const { dialog, open: openDialog, close: closeDialog } = useDialog();
 
-  const showError = (title: string, e: unknown) => {
+  const showError = (msg: string, e: unknown) => {
     openDialog({
       type: 'alert',
-      title,
-      message: `${title}失败: ${(e as Error).message ?? String(e)}`,
+      title: ui.screenshotUploadErr,
+      message: `${msg}: ${(e as Error).message ?? String(e)}`,
       onConfirm: closeDialog,
     });
   };
@@ -55,7 +59,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
       );
       setConfig((prev) => ({ ...prev, [field]: compressed }));
     } catch (err) {
-      showError(field === 'logoUrl' ? '图标上传' : '大图上传', err);
+      showError(field === 'logoUrl' ? ui.iconUploadErr : ui.bannerUploadErr, err);
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -76,7 +80,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
         screenshots: [...prev.screenshots, ...newScreenshots],
       }));
     } catch (err) {
-      showError('截图上传', err);
+      showError(ui.screenshotUploadErr, err);
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -119,7 +123,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
             )}
             <div className="relative z-10 flex flex-col items-center">
               <Box className="w-8 h-8 text-gray-400 mb-2" />
-              <span className="text-sm text-gray-600 font-medium">应用图标</span>
+              <span className="text-sm text-gray-600 font-medium">{ui.appIcon}</span>
             </div>
             <input
               type="file"
@@ -142,7 +146,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
             )}
             <div className="relative z-10 flex flex-col items-center">
               <ImageIcon className="w-8 h-8 text-gray-400 mb-2" />
-              <span className="text-sm text-gray-600 font-medium">置顶大图</span>
+              <span className="text-sm text-gray-600 font-medium">{ui.featureBanner}</span>
             </div>
             <input
               type="file"
@@ -156,14 +160,14 @@ export const VisualTab: React.FC<VisualTabProps> = ({
 
         <div className="border border-gray-200 rounded-xl overflow-hidden">
           <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <span className="text-sm font-bold text-gray-700">截图管理</span>
+            <span className="text-sm font-bold text-gray-700">{ui.screenshotMgmt}</span>
             <label
               className={`cursor-pointer text-xs text-blue-600 font-bold hover:text-blue-800 flex items-center gap-1 ${
                 uploading ? 'pointer-events-none opacity-60' : ''
               }`}
             >
               <Upload className="w-4 h-4" />
-              上传截图
+              {ui.uploadScreenshots}
               <input
                 type="file"
                 hidden
@@ -176,7 +180,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
           </div>
           <div className="p-3 space-y-3 max-h-[500px] overflow-y-auto">
             {config.screenshots.length === 0 && (
-              <div className="text-center py-8 text-sm text-gray-400">暂无截图</div>
+              <div className="text-center py-8 text-sm text-gray-400">{ui.noScreenshots}</div>
             )}
             {config.screenshots.map((src, idx) => (
               <motion.div
@@ -188,13 +192,13 @@ export const VisualTab: React.FC<VisualTabProps> = ({
                   <img src={src} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs text-gray-500 truncate">图{idx + 1}</div>
+                  <div className="text-xs text-gray-500 truncate">{idx + 1}</div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => moveScreenshot(idx, -1)}
                     disabled={idx === 0}
-                    aria-label="上移"
+                    aria-label={ui.moveUp}
                     className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
                   >
                     <ArrowUp className="w-4 h-4" />
@@ -202,14 +206,14 @@ export const VisualTab: React.FC<VisualTabProps> = ({
                   <button
                     onClick={() => moveScreenshot(idx, 1)}
                     disabled={idx === config.screenshots.length - 1}
-                    aria-label="下移"
+                    aria-label={ui.moveDown}
                     className="p-2 hover:bg-gray-100 rounded text-gray-600 disabled:opacity-30"
                   >
                     <ArrowDown className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => deleteScreenshot(idx)}
-                    aria-label="删除截图"
+                    aria-label={ui.delete}
                     className="p-2 hover:bg-red-50 rounded text-red-500 ml-1"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -228,7 +232,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
           >
             <div className="flex items-center gap-2 text-brand text-sm font-medium px-4 py-2 bg-white rounded-full shadow-md border border-gray-200">
               <Loader2 className="w-4 h-4 animate-spin" />
-              正在处理图片…
+              {ui.processingImages}
             </div>
           </div>
         )}
@@ -236,16 +240,14 @@ export const VisualTab: React.FC<VisualTabProps> = ({
         <div className="border-t border-gray-200 pt-4">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <div className="text-sm font-medium text-gray-800">预览水印</div>
-              <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                关闭后可以截图无遮挡。重新打开应用时自动恢复显示。
-              </div>
+              <div className="text-sm font-medium text-gray-800">{ui.previewWatermark}</div>
+              <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{ui.watermarkDesc}</div>
             </div>
             <button
               type="button"
               role="switch"
               aria-checked={showWatermark}
-              aria-label="预览水印开关"
+              aria-label={ui.watermarkLabel}
               onClick={() => setShowWatermark(!showWatermark)}
               className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
                 showWatermark ? 'bg-brand' : 'bg-gray-300'
@@ -261,7 +263,7 @@ export const VisualTab: React.FC<VisualTabProps> = ({
         </div>
       </motion.div>
 
-      <CustomDialog {...dialog} onClose={closeDialog} />
+      <CustomDialog {...dialog} onClose={closeDialog} ui={ui} />
     </>
   );
 };
